@@ -1,6 +1,5 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-<<<<<<< HEAD
 //import './index.css'
 import App from './App.jsx'
 import { Provider } from 'react-redux';
@@ -9,13 +8,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './theme.css';
 
 
-=======
-import './index.css'
-import App from './App.jsx'
-import { Provider } from 'react-redux'
-import { store } from './redux/store.js'
-import '../node_modules/bootstrap/dist/css/bootstrap.min.css'
->>>>>>> 281242e96f0f1e3574ff2b361eb594b98bbe8215
 
 createRoot(document.getElementById('root')).render(
   <Provider store={store}>

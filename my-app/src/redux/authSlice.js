@@ -1,16 +1,12 @@
-<<<<<<< HEAD
 //manage authantication information
 //central store
 //Intialization 
 //action - login, logout
 //login success - dispatch - action -login- modification
-=======
->>>>>>> 281242e96f0f1e3574ff2b361eb594b98bbe8215
 import { createSlice } from "@reduxjs/toolkit";
 
 const authSlice = createSlice({
   name: "auth",
-<<<<<<< HEAD
   initialState:{    
     user: null,  //this will contain id, username and role    
     token: null,
@@ -23,19 +19,6 @@ const authSlice = createSlice({
       state.isAuthenticated = true;   //boolean 
     },
 
-=======
-  initialState: {
-    user: null,
-    token: null,
-    isAuthenticated: false,
-  },
-  reducers: {
-    loginSuccess: (state, action) => {
-      state.user = action.payload.user;
-      state.token = action.payload.token;
-      state.isAuthenticated = true;
-    },
->>>>>>> 281242e96f0f1e3574ff2b361eb594b98bbe8215
     logout: (state) => {
       state.user = null;
       state.token = null;
@@ -45,8 +28,4 @@ const authSlice = createSlice({
 });
 
 export const { loginSuccess, logout } = authSlice.actions;
-<<<<<<< HEAD
 export default authSlice.reducer;
-=======
-export default authSlice.reducer;
->>>>>>> 281242e96f0f1e3574ff2b361eb594b98bbe8215

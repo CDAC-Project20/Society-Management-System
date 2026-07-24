@@ -3,7 +3,6 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
-<<<<<<< HEAD
 import LoginComp from './pages/LoginComp'
 import HomeComp from './pages/Home'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
@@ -16,22 +15,6 @@ import SecretaryDashboard from "./pages/SecretaryDashboard";
 import OwnerDashboard from "./pages/OwnerDashboard";
 import TenantDashboard from "./pages/TenantDashboard";
 import RegisterComp from './pages/Register'
-=======
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import NavbarComp from './components/NavbarComp'
-import HomeComp from './components/HomeComp'
-import LoginComp from './components/LoginComp'
-import RegisterComp from './components/RegisterComp'
-import CreateAccountComp from './components/CreateAccountComp'
-import ProtectedRoute from './components/ProtectedRoute'
-import AdminDashboard from './dashboards/AdminDashboard'
-import ComplaintComp from './components/ComplaintComp'
-import PollComp from './components/PollComp'
-import LogoutComp from './components/LogoutComp'
-import UserDashboard from './dashboards/UserDashboard'
-import PaymentComp from './components/PaymentComp'
-import NoticeComp from './components/NoticeComp'
->>>>>>> 281242e96f0f1e3574ff2b361eb594b98bbe8215
 
 function App() {
   const [count, setCount] = useState(0)
@@ -39,7 +22,6 @@ function App() {
   return (
     <>
       <BrowserRouter>
-<<<<<<< HEAD
         <Navbar />
         {/* <Routes>
          
@@ -184,55 +166,6 @@ function App() {
           <Route path="polls" element={<h1>Polls Page</h1>} />
         </Route>
       </Routes>
-=======
-      
-      <NavbarComp />
-
-      {/* Define routes */}
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<HomeComp />} />
-        <Route path="/login" element={<LoginComp />} />
-        <Route path="/register" element={<RegisterComp />} />
-        <Route path="/create-account" element={<CreateAccountComp />} />
-
-        {/* Admin Routes */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute role={1}>
-              <AdminDashboard/>
-            </ProtectedRoute>
-          }
-        >
-          <Route path="complaints" element={<ComplaintComp />} />
-          <Route path="polls" element={<PollComp />} />
-          <Route path="logout" element={<LogoutComp />} />
-        </Route>
-
-        {/* User Routes */}
-        <Route
-          path="/user"
-          element={
-            <ProtectedRoute role={2}>
-              <UserDashboard />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="complaints" element={<ComplaintComp />} />
-          <Route path="polls" element={<PollComp />} />
-          <Route path="payment" element={<PaymentComp />} />
-          <Route path="logout" element={<LogoutComp />} />
-        </Route>
-
-        {/* Common Routes 
-        <Route path="/visitor" element={<VisitorCom />} />*/}
-        <Route path="/notice" element={<NoticeComp />} />
-        <Route path="/unauthorized" element={<h1 className="text-center mt-5">Unauthorized Access</h1>} />
-      </Routes>
-      
-      
->>>>>>> 281242e96f0f1e3574ff2b361eb594b98bbe8215
       </BrowserRouter>
     </>
   )

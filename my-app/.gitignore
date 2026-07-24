@@ -8,10 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-<<<<<<< HEAD
 unwanted
-=======
->>>>>>> 281242e96f0f1e3574ff2b361eb594b98bbe8215
 dist
 dist-ssr
 *.local
