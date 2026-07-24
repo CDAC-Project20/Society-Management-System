@@ -259,6 +259,7 @@ CREATE TABLE `societies` (
   `ContactEmail` varchar(255) DEFAULT NULL,
   `ContactPhone` varchar(20) DEFAULT NULL,
   `Password` varchar(255) NOT NULL,
+  `status` enum('Pending','Approved','Rejected') NOT NULL DEFAULT 'Pending',
   PRIMARY KEY (`Id`),
   UNIQUE KEY `RegistrationNumber` (`RegistrationNumber`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -311,10 +312,6 @@ CREATE TABLE `votes` (
   CONSTRAINT `FK_Vote_User` FOREIGN KEY (`UserId`) REFERENCES `users` (`Id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping events for database 'society_management_system'
---
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -325,4 +322,4 @@ CREATE TABLE `votes` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-07 15:42:56
+-- Dump completed on 2026-07-24 21:55:27
