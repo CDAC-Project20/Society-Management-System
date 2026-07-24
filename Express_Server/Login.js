@@ -17,7 +17,11 @@ app.use(cors())
 let conn = mysql.createConnection({
     host: "localhost",
     user: "root",
+<<<<<<< HEAD
     password: "root",
+=======
+    password: "pass",
+>>>>>>> 281242e96f0f1e3574ff2b361eb594b98bbe8215
     database: "project_db",
 });
 
