@@ -1,0 +1,54 @@
+### Java ###
+*.class
+*.log
+*.jar
+*.war
+*.ear
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### VS Code ###
+.vscode/
+
+### Eclipse ###
+.metadata/
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+
+### OS & Temporary Files ###
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+logs/
+
+### Application & Secrets ###
+.env
+*.env
+application-local.properties
+application-secret.properties
+# application.properties # Uncomment if containing secret DB credentials
+
