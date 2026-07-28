@@ -251,7 +251,7 @@ DROP TABLE IF EXISTS `societies`;
 CREATE TABLE `societies` (
   `Id` bigint NOT NULL AUTO_INCREMENT,
   `SocietyName` varchar(200) NOT NULL,
-  `RegistrationNumber` varchar(100) DEFAULT NULL,
+  
   `Address` varchar(500) DEFAULT NULL,
   `City` varchar(100) DEFAULT NULL,
   `State` varchar(100) DEFAULT NULL,
@@ -261,7 +261,7 @@ CREATE TABLE `societies` (
   `Password` varchar(255) NOT NULL,
   `status` enum('Pending','Approved','Rejected') NOT NULL DEFAULT 'Pending',
   PRIMARY KEY (`Id`),
-  UNIQUE KEY `RegistrationNumber` (`RegistrationNumber`)
+  
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
