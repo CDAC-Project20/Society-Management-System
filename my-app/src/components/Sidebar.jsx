@@ -30,36 +30,46 @@ export default function Sidebar() {
         {user?.role === 1 && (
           <>
             <li><NavLink to="users" className="nav-link">Users</NavLink></li>
-            <li><NavLink to="flats" className="nav-link">Flats</NavLink></li>
+            <li><NavLink to="societies" className="nav-link">Societies</NavLink></li>
+            {/* <li><NavLink to="flats" className="nav-link">Flats</NavLink></li>
             <li><NavLink to="reports" className="nav-link">Reports</NavLink></li>
             <li><NavLink to="documents" className="nav-link">Documents</NavLink></li>
             <li><NavLink to="meetings" className="nav-link">Meetings</NavLink></li>
             <li><NavLink to="notices" className="nav-link">Notices</NavLink></li>
             <li><NavLink to="polls" className="nav-link">Polls</NavLink></li>
+           */}
           </>
         )}
         {user?.role === 2 && (
           <>
+            <li><NavLink to="UserRegister" className="nav-link">Register Owner</NavLink></li>
             <li><NavLink to="flats" className="nav-link">Flats</NavLink></li>
             <li><NavLink to="complaints" className="nav-link">Complaints</NavLink></li>
             <li><NavLink to="notices" className="nav-link">Notices</NavLink></li>
             <li><NavLink to="meetings" className="nav-link">Meetings</NavLink></li>
+            <li><NavLink to="polls" className="nav-link">Polls</NavLink></li>
+            <li><NavLink to="documents" className="nav-link">Documents</NavLink></li>
+
           </>
         )}
         {user?.role === 3 && (
           <>
+            <li><NavLink to="UserRegister" className="nav-link">Register Tenant</NavLink></li>
             <li><NavLink to="complaints" className="nav-link">Complaints</NavLink></li>
-            <li><NavLink to="documents" className="nav-link">Documents</NavLink></li>
+            <li><NavLink to="documents" className="nav-link">Documents</NavLink></li>sss
             <li><NavLink to="meetings" className="nav-link">Meetings</NavLink></li>
             <li><NavLink to="polls" className="nav-link">Polls</NavLink></li>
-            <li><NavLink to="tenants" className="nav-link">Manage Tenants</NavLink></li>
+            <li><NavLink to="Maintainence" className="nav-link">Maintainence</NavLink></li>
+            {/* <li><NavLink to="tenants" className="nav-link">Manage Tenants</NavLink></li>
             <li><NavLink to="booking" className="nav-link">Facility Booking</NavLink></li>
+           */}
           </>
         )}
         {user?.role === 4 && (
           <>
+            <li><NavLink to="Notice" className="nav-link">Notice</NavLink></li>
             <li><NavLink to="complaints" className="nav-link">Complaints</NavLink></li>
-            <li><NavLink to="documents" className="nav-link">Documents</NavLink></li>
+            {/* <li><NavLink to="documents" className="nav-link">Documents</NavLink></li> */}
             <li><NavLink to="meetings" className="nav-link">Meetings</NavLink></li>
             <li><NavLink to="polls" className="nav-link">Polls</NavLink></li>
           </>
