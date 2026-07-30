@@ -14,7 +14,8 @@ import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import SecretaryDashboard from "./pages/SecretaryDashboard";
 import OwnerDashboard from "./pages/OwnerDashboard";
 import TenantDashboard from "./pages/TenantDashboard";
-import RegisterComp from './pages/Register'
+import SocietyRegisterComp from './pages/SocetyRegister';
+import UserRegister from './pages/UserRegister';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -96,76 +97,84 @@ function App() {
         </Routes> */}
 
         <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<HomeComp />} />
-        <Route path="/login" element={<LoginComp />} />
-        <Route path="/register" element={<RegisterComp />} /> 
-        <Route path="/logout" element={<LogoutComp />} />
+          {/* Public routes */}
+          <Route path="/" element={<HomeComp />} />
+          <Route path="/login" element={<LoginComp />} />
+          <Route path="/register" element={<SocietyRegisterComp />} />
+          <Route path="/logout" element={<LogoutComp />} />
 
-        {/* Super Admin routes */}
-        <Route
-          path="/superadmin"
-          element={
-            <ProtectedRoute role={1}>
-              <SuperAdminDashboard />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="users" element={<h1>Users Page</h1>} />
-          <Route path="flats" element={<h1>Flats Page</h1>} />
+          {/* Super Admin routes */}
+          <Route
+            path="/superadmin"
+            element={
+              <ProtectedRoute role={1}>
+                <SuperAdminDashboard />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<h2 className="text-center mt-5">Welcome to Super Admin Dashboard</h2>} />
+            <Route path="users" element={<h1>Users Page</h1>} />
+            {/* <Route path="flats" element={<h1>Flats Page</h1>} />
           <Route path="reports" element={<h1>Reports Page</h1>} />
           <Route path="documents" element={<h1>Documents Page</h1>} />
           <Route path="meetings" element={<h1>Meetings Page</h1>} />
           <Route path="notices" element={<h1>Notices Page</h1>} />
-          <Route path="polls" element={<h1>Polls Page</h1>} />
-        </Route>
-        {/* </Route> */}
+          <Route path="polls" element={<h1>Polls Page</h1>} /> */}
+          </Route>
+          {/* </Route> */}
 
-        {/* Secretary routes */}
-        <Route
-          path="/secretary"
-          element={
-            <ProtectedRoute role={2}>
-              <SecretaryDashboard />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="flats" element={<h1>Flats Page</h1>} />
-          <Route path="complaints" element={<h1>Complaints Page</h1>} />
-          <Route path="notices" element={<h1>Notices Page</h1>} />
-          <Route path="meetings" element={<h1>Meetings Page</h1>} />
-        </Route>
+          {/* Secretary routes */}
+          <Route
+            path="/secretary"
+            element={
+              <ProtectedRoute role={2}>
+                <SecretaryDashboard />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<h2 className="text-center mt-5">Welcome to Secretary Dashboard</h2>} />
+            <Route path="UserRegister" element={<UserRegister />} />
+            <Route path="flats" element={<h1>Flats Page</h1>} />
+            <Route path="complaints" element={<h1>Complaints Page</h1>} />
+            <Route path="notices" element={<h1>Notices Page</h1>} />
+            <Route path="meetings" element={<h1>Meetings Page</h1>} />
+          </Route>
 
-        {/* Owner routes */}
-        <Route
-          path="/owner"
-          element={
-            <ProtectedRoute role={3}>
-              <OwnerDashboard />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="complaints" element={<h1>Complaints Page</h1>} />
-          <Route path="documents" element={<h1>Documents Page</h1>} />
-          <Route path="meetings" element={<h1>Meetings Page</h1>} />
-          <Route path="polls" element={<h1>Polls Page</h1>} />
-        </Route>
+          {/* Owner routes */}
+          <Route
+            path="/owner"
+            element={
+              <ProtectedRoute role={3}>
+                <OwnerDashboard />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<h2 className="text-center mt-5">Welcome to Owner Dashboard</h2>} />
+            <Route path='Notice' element={<h1>Notice</h1>} />
 
-        {/* Tenant routes */}
-        <Route
-          path="/tenant"
-          element={
-            <ProtectedRoute role={4}>
-              <TenantDashboard />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="complaints" element={<h1>Complaints Page</h1>} />
-          <Route path="documents" element={<h1>Documents Page</h1>} />
-          <Route path="meetings" element={<h1>Meetings Page</h1>} />
-          <Route path="polls" element={<h1>Polls Page</h1>} />
-        </Route>
-      </Routes>
+            <Route path="UserRegister" element={<UserRegister />} />
+            <Route path="complaints" element={<h1>Complaints Page</h1>} />
+            <Route path="documents" element={<h1>Documents Page</h1>} />
+            <Route path="meetings" element={<h1>Meetings Page</h1>} />
+            <Route path="polls" element={<h1>Polls Page</h1>} />
+          </Route>
+
+          {/* Tenant routes */}
+          <Route
+            path="/tenant"
+            element={
+              <ProtectedRoute role={4}>
+                <TenantDashboard />
+              </ProtectedRoute>
+            }
+          >
+            <Route path='Notice' element={<h1>Notice</h1>} />
+            <Route path="complaints" element={<h1>Complaints Page</h1>} />
+            <Route path="documents" element={<h1>Documents Page</h1>} />
+            <Route path="meetings" element={<h1>Meetings Page</h1>} />
+
+          </Route>
+        </Routes>
       </BrowserRouter>
     </>
   )
