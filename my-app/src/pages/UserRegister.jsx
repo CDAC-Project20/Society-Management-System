@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 export default function UserRegister() {
@@ -17,12 +17,16 @@ export default function UserRegister() {
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
 
+  // Determine user type being registered based on current logged in user role
+  const isOwner = user?.role === 3 || user?.roleName?.toLowerCase() === "owner";
+  const userTypeToRegister = isOwner ? "Tenant" : "Owner";
+
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Attach the ID of the admin currently logged in
+    // Attach the ID of the logged in user who is creating this user
     const payload = {
       ...form,
       createdByAdminId: user?.id
@@ -33,7 +37,6 @@ export default function UserRegister() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // The backend expects the JWT token to extract the role and authorize!
           "Authorization": `Bearer ${token || ""}`
         },
         body: JSON.stringify(payload),
@@ -42,7 +45,7 @@ export default function UserRegister() {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage(data.message || "Successfully created User account!");
+        setMessage(data.message || `Successfully registered new ${data.roleName || userTypeToRegister}!`);
         setIsError(false);
         // Clear form on success
         setForm({ firstName: "", lastName: "", email: "", phoneNumber: "", password: "" });
@@ -56,7 +59,7 @@ export default function UserRegister() {
       setMessage("Server error — check backend");
       setIsError(true);
     }
-  }
+  };
 
   return (
     <div
@@ -69,7 +72,7 @@ export default function UserRegister() {
       }}
     >
       <div className="card-body p-4">
-        <h3 className="text-center mb-4 text-dark fw-bold">Register New User</h3>
+        <h3 className="text-center mb-4 text-dark fw-bold">Register New {userTypeToRegister}</h3>
         <form onSubmit={handleSubmit}>
 
           <div className="row">
@@ -100,7 +103,7 @@ export default function UserRegister() {
           </div>
 
           <button type="submit" className="btn btn-primary w-100 fw-bold fs-5">
-            Create User
+            Register {userTypeToRegister}
           </button>
         </form>
 

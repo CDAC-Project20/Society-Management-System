@@ -5,6 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:superadmin": "vite --port 5173",
+    "dev:secretary": "vite --port 5174",
+    "dev:owner": "vite --port 5175",
+    "dev:tenant": "vite --port 5176",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
