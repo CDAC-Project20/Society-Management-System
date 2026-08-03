@@ -16,8 +16,8 @@ import com.sms.society.Entities.Society;
 import com.sms.society.Service.SocietyRegisService;
 
 @RestController
-@RequestMapping("/societies")
-@CrossOrigin(origins = "http://localhost:5173")
+@RequestMapping(value = {"/api/society/societies", "/api/society", "/societies"})
+@CrossOrigin(origins = "*")
 public class SocietyRegisController {
 
     @Autowired

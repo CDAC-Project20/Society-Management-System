@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/flats")
-@CrossOrigin(origins = "http://localhost:5173")
+@RequestMapping(value = {"/api/society/flats", "/flats"})
+@CrossOrigin(origins = "*")
 public class FlatController {
 
     @Autowired

@@ -1,9 +1,11 @@
-# Node
+# Logs & Node
 node_modules/
 dist/
 dist-ssr/
 *.local
 *.log
+logs/
+Express_Server/
 
 # Java & Maven
 target/

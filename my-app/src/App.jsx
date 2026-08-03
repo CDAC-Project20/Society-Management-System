@@ -16,6 +16,9 @@ import OwnerDashboard from "./pages/OwnerDashboard";
 import TenantDashboard from "./pages/TenantDashboard";
 import SocietyRegisterComp from './pages/SocetyRegister';
 import UserRegister from './pages/UserRegister';
+import PublishNotice from './pages/PublishNotice';
+import RaiseComplaint from './pages/RaiseComplaint';
+import CreateFlat from './pages/CreateFlat';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -134,9 +137,9 @@ function App() {
           >
             <Route index element={<h2 className="text-center mt-5">Welcome to Secretary Dashboard</h2>} />
             <Route path="UserRegister" element={<UserRegister />} />
-            <Route path="flats" element={<h1>Flats Page</h1>} />
-            <Route path="complaints" element={<h1>Complaints Page</h1>} />
-            <Route path="notices" element={<h1>Notices Page</h1>} />
+            <Route path="flats" element={<CreateFlat />} />
+            <Route path="complaints" element={<h1>View Complaints</h1>} />
+            <Route path="notices" element={<PublishNotice />} />
             <Route path="meetings" element={<h1>Meetings Page</h1>} />
           </Route>
 
@@ -153,7 +156,7 @@ function App() {
             <Route path='Notice' element={<h1>Notice</h1>} />
 
             <Route path="UserRegister" element={<UserRegister />} />
-            <Route path="complaints" element={<h1>Complaints Page</h1>} />
+            <Route path="complaints" element={<RaiseComplaint />} />
             <Route path="documents" element={<h1>Documents Page</h1>} />
             <Route path="meetings" element={<h1>Meetings Page</h1>} />
             <Route path="polls" element={<h1>Polls Page</h1>} />
@@ -169,7 +172,7 @@ function App() {
             }
           >
             <Route path='Notice' element={<h1>Notice</h1>} />
-            <Route path="complaints" element={<h1>Complaints Page</h1>} />
+            <Route path="complaints" element={<RaiseComplaint />} />
             <Route path="documents" element={<h1>Documents Page</h1>} />
             <Route path="meetings" element={<h1>Meetings Page</h1>} />
 

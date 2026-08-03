@@ -113,7 +113,7 @@ export default function RegisterComp() {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/register", {
+      const res = await fetch("http://localhost:8080/societies/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -122,10 +122,10 @@ export default function RegisterComp() {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage(data.message);
+        setMessage(data.message || "Registration successful");
         navigate("/login");
       } else {
-        setMessage(data.error || "Registration failed");
+        setMessage(data.error || data.message || "Registration failed");
       }
     } catch (err) {
       console.error(err);

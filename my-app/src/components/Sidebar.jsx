@@ -56,7 +56,7 @@ export default function Sidebar() {
           <>
             <li><NavLink to="UserRegister" className="nav-link">Register Tenant</NavLink></li>
             <li><NavLink to="complaints" className="nav-link">Complaints</NavLink></li>
-            <li><NavLink to="documents" className="nav-link">Documents</NavLink></li>sss
+            <li><NavLink to="documents" className="nav-link">Documents</NavLink></li>
             <li><NavLink to="meetings" className="nav-link">Meetings</NavLink></li>
             <li><NavLink to="polls" className="nav-link">Polls</NavLink></li>
             <li><NavLink to="Maintainence" className="nav-link">Maintainence</NavLink></li>

@@ -22,19 +22,22 @@ export default function PublishNotice() {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/secretary/notices/publish", {
+      const payload = {
+        societyId: user?.societyId || 1,
+        userId: user?.id,
+        title,
+        description,
+        publishedDate: new Date(publishedDate).toISOString(),
+        expiryDate: new Date(expiryDate).toISOString()
+      };
+
+      const response = await fetch("http://localhost:8080/api/society/notices/publish", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(user?.token ? { "Authorization": `Bearer ${user.token}` } : {})
         },
-        body: JSON.stringify({
-          societyId: user?.societyId,
-          userId: user?.id,
-          title,
-          description,
-          publishedDate: new Date(publishedDate).toISOString(),
-          expiryDate: new Date(expiryDate).toISOString()
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {

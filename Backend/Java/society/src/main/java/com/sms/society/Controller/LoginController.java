@@ -13,8 +13,8 @@ import com.sms.society.Entities.User;
 import com.sms.society.Service.LoginService;
 
 @RestController
-@RequestMapping("/")
-@CrossOrigin(origins = "http://localhost:5173")
+@RequestMapping(value = {"/api/society/login", "/login"})
+@CrossOrigin(origins = "*")
 public class LoginController {
 
     @Autowired

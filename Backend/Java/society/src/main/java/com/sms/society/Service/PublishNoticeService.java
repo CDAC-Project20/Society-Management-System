@@ -31,12 +31,13 @@ public class PublishNoticeService {
         User user = userRepo.findById(reqNotice.getUserId())
             .orElseThrow(() -> new Exception("User not found"));
 
-        String roleName = user.getRole().getRoleName();
-        if (!"Admin".equalsIgnoreCase(roleName) && !"Secretary".equalsIgnoreCase(roleName)) {
+        String roleName = user.getRole() != null ? user.getRole().getRoleName() : "";
+        if (!"Admin".equalsIgnoreCase(roleName) && !"Secretary".equalsIgnoreCase(roleName) && !"SuperAdmin".equalsIgnoreCase(roleName)) {
             throw new Exception("Only Secretary or Admin can publish notices");
         }
 
-        Society society = societyRepo.findById(reqNotice.getSocietyId())
+        Long societyId = reqNotice.getSocietyId() != null ? reqNotice.getSocietyId() : (user.getSociety() != null ? user.getSociety().getId() : 1L);
+        Society society = societyRepo.findById(societyId)
             .orElseThrow(() -> new Exception("Society not found"));
 
         Notice notice = new Notice();

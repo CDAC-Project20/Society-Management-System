@@ -245,8 +245,9 @@ import { useNavigate } from "react-router-dom";
 import RegisterComp from "./Register";
 
 export default function HomeComp() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
   const [showRegister, setShowRegister] = useState(false);
 
   const { isAuthenticated, user } = useSelector((state) => state.auth);
@@ -266,27 +267,38 @@ export default function HomeComp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:3000/login", {
+      const res = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        dispatch(loginSuccess({ user: data.user, token: data.token }));
+        const userData = data.user || {
+          id: data.id,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          role: data.role || 1,
+          roleName: data.roleName || "SuperAdmin",
+          societyName: data.societyName,
+        };
+        const token = data.token || "dummy-jwt-token";
 
-        if (data.user.role === 1) navigate("/superadmin");
-        else if (data.user.role === 2) navigate("/secretary");
-        else if (data.user.role === 3) navigate("/owner");
-        else if (data.user.role === 4) navigate("/tenant");
+        dispatch(loginSuccess({ user: userData, token }));
+
+        if (userData.role === 1) navigate("/superadmin");
+        else if (userData.role === 2) navigate("/secretary");
+        else if (userData.role === 3) navigate("/owner");
+        else if (userData.role === 4) navigate("/tenant");
       } else {
-        alert(data.message || "Invalid credentials");
+        setMessage(data.message || "Invalid Email or Password");
       }
     } catch (err) {
       console.error(err);
-      alert("Server error — check backend");
+      setMessage("Server error — check backend connection");
     }
   };
 
@@ -315,15 +327,16 @@ export default function HomeComp() {
               ) : (
                 <>
                   <h3 className="fw-bold mb-4 text-center">Login</h3>
+                  {message && <div className="alert alert-danger">{message}</div>}
                   <form onSubmit={handleSubmit}>
                     <div className="mb-3">
-                      <label className="form-label">Username</label>
+                      <label className="form-label">Email</label>
                       <input
-                        type="text"
+                        type="email"
                         className="form-control"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        placeholder="Enter your username"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter your email"
                         required
                       />
                     </div>

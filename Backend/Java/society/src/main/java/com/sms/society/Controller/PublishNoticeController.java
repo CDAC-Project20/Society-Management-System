@@ -15,8 +15,8 @@ import com.sms.society.DTO.NoticeDTO;
 import com.sms.society.Service.PublishNoticeService;
 
 @RestController
-@RequestMapping("secretary/notices")
-@CrossOrigin(origins = "http://localhost:5173")
+@RequestMapping(value = {"/api/society/secretary/notices", "/api/society/notices", "/secretary/notices"})
+@CrossOrigin(origins = "*")
 public class PublishNoticeController {
     
     @Autowired

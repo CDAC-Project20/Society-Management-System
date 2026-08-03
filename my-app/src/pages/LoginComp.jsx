@@ -83,8 +83,8 @@ import { loginSuccess } from "../redux/authSlice";
 import { useNavigate } from "react-router-dom";
 
 export default function LoginComp() {
-  const [username, setusername] = useState("");
-  const [password, setpassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -92,29 +92,38 @@ export default function LoginComp() {
   const handlesubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:3000/login", {
+      const res = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
         setMessage("Successful");
-        // ✅ FIX: dispatch correct shape
-        dispatch(loginSuccess({ user: data.user, token: data.token }));
+        const userData = data.user || {
+          id: data.id,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          role: data.role || 1,
+          roleName: data.roleName || "SuperAdmin",
+          societyName: data.societyName,
+        };
+        const token = data.token || "dummy-jwt-token";
 
-        // ✅ FIX: check role from data.user
-        if (data.user.role === 1) navigate("/superadmin");
-        else if (data.user.role === 2) navigate("/secretary");
-        else if (data.user.role === 3) navigate("/owner");
-        else if (data.user.role === 4) navigate("/tenant");
+        dispatch(loginSuccess({ user: userData, token }));
+
+        if (userData.role === 1) navigate("/superadmin");
+        else if (userData.role === 2) navigate("/secretary");
+        else if (userData.role === 3) navigate("/owner");
+        else if (userData.role === 4) navigate("/tenant");
       } else {
-        setMessage("Invalid Username or Password");
+        setMessage(data.message || "Invalid Email or Password");
       }
     } catch (err) {
-      setMessage("Server error");
+      setMessage("Server error — please verify backend is running");
       console.error("Error:", err);
     }
   };
@@ -135,14 +144,15 @@ export default function LoginComp() {
               <h2 className="text-center mb-4 text-dark fw-bold">Login Form</h2>
               <form onSubmit={handlesubmit}>
                 <div className="mb-3">
-                  <label className="form-label fw-semibold">Username</label>
+                  <label className="form-label fw-semibold">Email Address</label>
                   <input
-                    type="text"
-                    name="username"
-                    value={username}
-                    onChange={(e) => setusername(e.target.value)}
+                    type="email"
+                    name="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="form-control"
-                    placeholder="Enter username"
+                    placeholder="Enter email"
+                    required
                   />
                 </div>
                 <div className="mb-3">
@@ -151,9 +161,10 @@ export default function LoginComp() {
                     type="password"
                     name="password"
                     value={password}
-                    onChange={(e) => setpassword(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="form-control"
                     placeholder="Enter password"
+                    required
                   />
                 </div>
                 <button type="submit" className="btn btn-primary w-100">
