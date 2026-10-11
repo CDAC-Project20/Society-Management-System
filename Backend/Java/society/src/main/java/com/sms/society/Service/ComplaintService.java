@@ -64,12 +64,22 @@ public class ComplaintService {
         Society society = societyRepository.findById(societyId)
                 .orElseThrow(() -> new Exception("Society not found"));
 
-        // 4. Validate Flat
-        if (request.getFlatId() == null) {
-            throw new Exception("Flat ID is required to raise a complaint.");
+        // 4. Resolve Flat automatically using User ID (no flatId required)
+        Flat flat = null;
+        if (request.getFlatId() != null) {
+            flat = flatRepository.findById(request.getFlatId()).orElse(null);
         }
-        Flat flat = flatRepository.findById(request.getFlatId())
-                .orElseThrow(() -> new Exception("Flat not found"));
+
+        if (flat == null) {
+            // Auto-resolve flat linked to this user as Tenant or Owner
+            List<Flat> userFlats = "Tenant".equalsIgnoreCase(roleName)
+                    ? flatRepository.findByTenantId(userId)
+                    : flatRepository.findByOwnerId(userId);
+
+            if (userFlats != null && !userFlats.isEmpty()) {
+                flat = userFlats.get(0);
+            }
+        }
 
         // 5. Create Complaint Entity
         Complaint complaint = new Complaint();

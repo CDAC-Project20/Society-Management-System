@@ -19,7 +19,42 @@ export default function SecretaryComplaints() {
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
 
+  // AI Complaint Analysis State
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const [showAiCard, setShowAiCard] = useState(true);
+
   const societyId = user?.societyId || 1;
+
+  const handleGenerateAiAnalysis = async () => {
+    setAiLoading(true);
+    setAiError("");
+    try {
+      const statusParam = statusFilter && statusFilter !== "ALL" ? `?status=${encodeURIComponent(statusFilter)}` : "";
+      const res = await fetch(`http://localhost:8080/complaints/society/${societyId}/analysis${statusParam}`, {
+        headers: {
+          "Authorization": `Bearer ${token || ""}`,
+          "X-User-Role": user?.roleName || "Secretary",
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setAiAnalysis(data);
+        setShowAiCard(true);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setAiError(errData.error || `Failed to generate AI analysis (HTTP status ${res.status}).`);
+      }
+    } catch (err) {
+      console.error("AI Analysis fetch error:", err);
+      setAiError("Unable to connect to backend server. Please verify the society-service is running.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
 
   useEffect(() => {
     fetchComplaints();
@@ -144,6 +179,27 @@ export default function SecretaryComplaints() {
     }
   };
 
+  const getAiPriorityBadge = (priority) => {
+    switch ((priority || "").toUpperCase()) {
+      case "HIGH":
+        return <span className="badge bg-danger text-white px-2 py-1"><span className="me-1">🚨</span>HIGH</span>;
+      case "MEDIUM":
+        return <span className="badge bg-warning text-dark px-2 py-1"><span className="me-1">⚡</span>MEDIUM</span>;
+      case "LOW":
+        return <span className="badge bg-info text-dark px-2 py-1"><span className="me-1">ℹ️</span>LOW</span>;
+      default:
+        return <span className="badge bg-secondary px-2 py-1">{priority || "NORMAL"}</span>;
+    }
+  };
+
+  const aiAnalysisMap = (aiAnalysis?.complaintAnalyses || []).reduce((acc, item) => {
+    if (item.complaintId) {
+      acc[item.complaintId] = item;
+    }
+    return acc;
+  }, {});
+
+
   return (
     <div className="container-fluid p-4">
       {/* Page Title */}
@@ -156,12 +212,35 @@ export default function SecretaryComplaints() {
             Review resident issues, mark items needing resolution, or update resolution progress.
           </p>
         </div>
-        <button
-          onClick={fetchComplaints}
-          className="btn btn-outline-primary btn-sm d-flex align-items-center gap-2"
-        >
-          <span>🔄</span> Refresh
-        </button>
+        <div className="d-flex align-items-center gap-2">
+          <button
+            onClick={fetchComplaints}
+            className="btn btn-outline-primary btn-sm d-flex align-items-center gap-2"
+          >
+            <span>🔄</span> Refresh
+          </button>
+          <button
+            onClick={handleGenerateAiAnalysis}
+            disabled={aiLoading}
+            className="btn btn-primary btn-sm d-flex align-items-center gap-2 shadow-sm text-white"
+            style={{
+              background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
+              border: "none",
+            }}
+          >
+            {aiLoading ? (
+              <>
+                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span>Analyzing with Gemini...</span>
+              </>
+            ) : (
+              <>
+                <span>✨</span>
+                <span className="fw-semibold">Generate AI Analysis</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Alert Messages */}
@@ -175,6 +254,189 @@ export default function SecretaryComplaints() {
         <div className="alert alert-success alert-dismissible fade show" role="alert">
           {successMsg}
           <button type="button" className="btn-close" onClick={() => setSuccessMsg("")}></button>
+        </div>
+      )}
+
+      {/* AI Error Alert */}
+      {aiError && (
+        <div className="alert alert-danger alert-dismissible fade show border-start border-4 border-danger shadow-sm mb-4" role="alert">
+          <div className="d-flex align-items-start gap-2">
+            <span className="fs-5">⚠️</span>
+            <div>
+              <strong className="d-block">AI Complaint Analysis Failed:</strong>
+              <span>{aiError}</span>
+              {aiError.toLowerCase().includes("api key") && (
+                <div className="small text-muted mt-2">
+                  Tip: Ensure the <code>GEMINI_API_KEY</code> environment variable is set on the server or in <code>.env</code> file.
+                </div>
+              )}
+            </div>
+          </div>
+          <button type="button" className="btn-close" onClick={() => setAiError("")}></button>
+        </div>
+      )}
+
+      {/* AI Loading State */}
+      {aiLoading && (
+        <div className="card border-0 shadow-sm rounded-3 p-4 mb-4 bg-white text-center">
+          <div className="spinner-border text-primary mb-3" style={{ width: "2.5rem", height: "2.5rem" }} role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <h5 className="fw-bold text-dark mb-1">🤖 Google Gemini & Spring AI are analyzing complaints...</h5>
+          <p className="text-muted small mb-0">
+            Applying housing society bylaws (RAG), evaluating complaint severity, and checking recurring patterns...
+          </p>
+        </div>
+      )}
+
+      {/* AI Analysis Result Card */}
+      {aiAnalysis && !aiLoading && (
+        <div className="card border-0 shadow-sm rounded-3 mb-4 overflow-hidden" style={{ borderLeft: "5px solid #6366f1" }}>
+          <div className="card-header bg-white border-bottom p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div className="d-flex align-items-center gap-2">
+              <span className="fs-4">✨</span>
+              <div>
+                <h5 className="fw-bold mb-0 text-dark">AI Complaint Intelligence & Analysis</h5>
+                <small className="text-muted">
+                  Powered by <strong>Spring AI & Google Gemini</strong> | Grounded with Housing Society Bylaws (RAG)
+                </small>
+              </div>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <span className="badge bg-primary bg-opacity-10 text-primary border border-primary px-2 py-1">
+                {aiAnalysis.totalComplaintsAnalyzed} Complaints Evaluated
+              </span>
+              <button
+                className="btn btn-sm btn-outline-secondary"
+                onClick={() => setShowAiCard(!showAiCard)}
+              >
+                {showAiCard ? "Hide Details" : "Show Details"}
+              </button>
+              <button
+                className="btn btn-sm btn-outline-danger"
+                onClick={() => setAiAnalysis(null)}
+                title="Dismiss AI Report"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          {showAiCard && (
+            <div className="card-body p-4 bg-light bg-opacity-25">
+              {/* RAG Context Banner */}
+              {aiAnalysis.ragContext && (
+                <div className="p-2 px-3 mb-3 rounded-2 bg-info bg-opacity-10 border border-info text-dark small d-flex align-items-center gap-2">
+                  <span>⚡</span>
+                  <div>
+                    <strong>RAG Grounding Active:</strong> Injected {aiAnalysis.ragContext.knowledgeItemsRetrieved || "standard"} Society Bylaw SLA rules to objectively verify emergency plumbing, lift safety, and priority escalation.
+                  </div>
+                </div>
+              )}
+
+              {/* Overall Summary & Recommended Actions */}
+              <div className="row g-3 mb-4">
+                <div className="col-lg-7">
+                  <div className="card h-100 border-0 shadow-sm rounded-3 p-3 bg-white">
+                    <h6 className="fw-bold text-secondary mb-2 d-flex align-items-center gap-2">
+                      <span>📋</span> Overall Summary
+                    </h6>
+                    <p className="text-dark mb-0 leading-relaxed" style={{ fontSize: "0.95rem" }}>
+                      {aiAnalysis.overallSummary || "No summary provided."}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="col-lg-5">
+                  <div className="card h-100 border-0 shadow-sm rounded-3 p-3 bg-white">
+                    <h6 className="fw-bold text-success mb-2 d-flex align-items-center gap-2">
+                      <span>✅</span> Recommended Actions for Secretary
+                    </h6>
+                    {aiAnalysis.recommendedActions && aiAnalysis.recommendedActions.length > 0 ? (
+                      <ul className="list-unstyled mb-0 small">
+                        {aiAnalysis.recommendedActions.map((action, idx) => (
+                          <li key={idx} className="mb-2 d-flex align-items-start gap-2">
+                            <span className="text-success fw-bold">✓</span>
+                            <span>{action}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-muted small mb-0">No actions required.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Recurring Issues (if any) */}
+              {aiAnalysis.recurringIssues && aiAnalysis.recurringIssues.length > 0 && (
+                <div className="mb-4">
+                  <h6 className="fw-bold text-danger mb-2 d-flex align-items-center gap-2">
+                    <span>🚨</span> Recurring Issues & Pattern Detection
+                  </h6>
+                  <div className="row g-2">
+                    {aiAnalysis.recurringIssues.map((rec, idx) => (
+                      <div key={idx} className="col-md-6 col-lg-4">
+                        <div className="card border-0 shadow-sm rounded-3 p-3 bg-white border-start border-4 border-danger h-100">
+                          <div className="d-flex justify-content-between align-items-start mb-1">
+                            <span className="badge bg-danger bg-opacity-10 text-danger border border-danger">
+                              {rec.category || "General"}
+                            </span>
+                            <span className="badge bg-danger text-white">
+                              {rec.count} Occurrences
+                            </span>
+                          </div>
+                          <p className="fw-semibold text-dark small mb-1">{rec.description}</p>
+                          {rec.location && (
+                            <small className="text-muted">
+                              📍 <strong>Area/Location:</strong> {rec.location}
+                            </small>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Complaint Categorization & Priority Suggestions Table */}
+              {aiAnalysis.complaintAnalyses && aiAnalysis.complaintAnalyses.length > 0 && (
+                <div>
+                  <h6 className="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
+                    <span>🎯</span> AI Categorization & Suggested Priorities
+                  </h6>
+                  <div className="table-responsive bg-white rounded-3 shadow-sm border">
+                    <table className="table table-sm table-hover mb-0 align-middle">
+                      <thead className="table-light small">
+                        <tr>
+                          <th className="ps-3">ID</th>
+                          <th>Category</th>
+                          <th>Suggested Priority</th>
+                          <th>AI Justification / SLA Reason</th>
+                          <th className="pe-3">Recommended Next Step</th>
+                        </tr>
+                      </thead>
+                      <tbody className="small">
+                        {aiAnalysis.complaintAnalyses.map((item, idx) => (
+                          <tr key={idx}>
+                            <td className="ps-3 fw-bold text-secondary">#{item.complaintId}</td>
+                            <td>
+                              <span className="badge bg-light text-dark border">
+                                {item.category || "General"}
+                              </span>
+                            </td>
+                            <td>{getAiPriorityBadge(item.suggestedPriority)}</td>
+                            <td className="text-muted">{item.reason}</td>
+                            <td className="pe-3 text-dark fw-semibold">{item.recommendedAction}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -338,8 +600,23 @@ export default function SecretaryComplaints() {
                         <span className="badge bg-light text-dark border">
                           {c.category || "General"}
                         </span>
+                        {aiAnalysisMap[c.id] && aiAnalysisMap[c.id].category && aiAnalysisMap[c.id].category !== c.category && (
+                          <div className="mt-1" title="AI Suggested Category">
+                            <span className="badge bg-primary bg-opacity-10 text-primary border border-primary" style={{ fontSize: "0.68rem" }}>
+                              AI: {aiAnalysisMap[c.id].category}
+                            </span>
+                          </div>
+                        )}
                       </td>
-                      <td>{getPriorityBadge(c.priority)}</td>
+                      <td>
+                        <div>{getPriorityBadge(c.priority)}</div>
+                        {aiAnalysisMap[c.id] && (
+                          <div className="mt-1" title={aiAnalysisMap[c.id].reason}>
+                            <small className="d-block text-muted" style={{ fontSize: "0.68rem" }}>AI Suggestion:</small>
+                            {getAiPriorityBadge(aiAnalysisMap[c.id].suggestedPriority)}
+                          </div>
+                        )}
+                      </td>
                       <td>{getStatusBadge(c.status)}</td>
                       <td className="small text-muted">
                         {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "N/A"}
@@ -457,6 +734,26 @@ export default function SecretaryComplaints() {
                     {selectedComplaint.description || "No description provided."}
                   </div>
                 </div>
+
+                {aiAnalysisMap[selectedComplaint.id] && (
+                  <div className="mb-4 p-3 rounded-3 border" style={{ backgroundColor: "#f5f3ff", borderColor: "#c4b5fd" }}>
+                    <div className="d-flex align-items-center justify-content-between mb-2">
+                      <span className="fw-bold text-primary small d-flex align-items-center gap-1">
+                        <span>🤖</span> AI Advisory (Google Gemini & Bylaws RAG)
+                      </span>
+                      {getAiPriorityBadge(aiAnalysisMap[selectedComplaint.id].suggestedPriority)}
+                    </div>
+                    <div className="small mb-1">
+                      <strong>AI Category:</strong> <span className="badge bg-light text-dark border ms-1">{aiAnalysisMap[selectedComplaint.id].category}</span>
+                    </div>
+                    <div className="small mb-2 text-dark">
+                      <strong>Justification (SLA):</strong> {aiAnalysisMap[selectedComplaint.id].reason}
+                    </div>
+                    <div className="small text-success fw-semibold">
+                      <strong>Recommended Action:</strong> {aiAnalysisMap[selectedComplaint.id].recommendedAction}
+                    </div>
+                  </div>
+                )}
 
                 <div className="row g-3 border-top pt-3 text-muted small">
                   <div className="col-md-6">
