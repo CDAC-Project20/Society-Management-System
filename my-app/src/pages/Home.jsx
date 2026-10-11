@@ -323,7 +323,7 @@ export default function HomeComp() {
           {!isAuthenticated && (
             <>
               {showRegister ? (
-                <RegisterComp />
+                <RegisterComp onToggleLogin={() => setShowRegister(false)} />
               ) : (
                 <>
                   <h3 className="fw-bold mb-4 text-center">Login</h3>
@@ -356,30 +356,17 @@ export default function HomeComp() {
                     </button>
                   </form>
 
-                  {/* ✅ Message + Link */}
+                  {/* Message + Link */}
                   <p className="text-center mt-3">
                     Don’t have an account?{" "}
                     <button
                       className="btn btn-link text-primary fw-bold p-0"
                       onClick={() => setShowRegister(true)}
                     >
-                      Register
+                      Register Society
                     </button>
                   </p>
                 </>
-              )}
-
-              {/* Toggle back to login */}
-              {showRegister && (
-                <div className="text-center mt-3">
-                  Already have an account?{" "}
-                  <button
-                    className="btn btn-link text-primary fw-bold"
-                    onClick={() => setShowRegister(false)}
-                  >
-                  Login
-                  </button>
-                </div>
               )}
             </>
           )}

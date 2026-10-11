@@ -11,9 +11,15 @@ import com.sms.society.Entities.Complaint;
 public interface ComplaintRepo extends JpaRepository<Complaint, Long> {
     List<Complaint> findBySocietyId(Long societyId);
     
+    List<Complaint> findBySocietyIdOrderByIdDesc(Long societyId);
+    
     List<Complaint> findByRaisedById(Long userId);
     
+    List<Complaint> findByRaisedByIdOrderByIdDesc(Long userId);
+    
     List<Complaint> findByFlatId(Long flatId);
+    
+    List<Complaint> findByFlatIdOrderByIdDesc(Long flatId);
     
     List<Complaint> findBySocietyIdAndStatus(Long societyId, String status);
 }

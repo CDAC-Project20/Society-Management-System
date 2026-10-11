@@ -22,7 +22,12 @@ public class UserDTO {
         private String firstName;
         private String lastName;
         private String email;
+        private String phoneNumber;
+        private Long societyId;
         private String societyName;
+        private Long roleId;
         private String roleName;
+        private Boolean isActive;
+        private java.sql.Timestamp createdAt;
     }
 }

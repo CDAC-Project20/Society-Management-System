@@ -18,8 +18,8 @@ import com.sms.society.Utils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping(value = {"/api/society/users", "/api/society", "/users"})
-@CrossOrigin(origins = "*")
+@RequestMapping("/users")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserRegisController {
     
     @Autowired
@@ -29,7 +29,7 @@ public class UserRegisController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/registerUser")
-    public ResponseEntity<?> registerUser(@RequestBody UserDTO.Request userRequest, HttpServletRequest request) {
+    public ResponseEntity<?> registerOwner(@RequestBody UserDTO.Request userRequest, HttpServletRequest request) {
         try {
             String token = jwtUtil.extractTokenFromRequest(request);
             if (token == null) {
@@ -37,8 +37,11 @@ public class UserRegisController {
             }
             
             String role = jwtUtil.extractRole(token);
+            if (role == null || (!role.equals("Admin") && !role.equals("Owner"))) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Only Admins can register new users."));
+            }
 
-            User savedUser = userRegisService.registerUser(userRequest, role);
+            User savedUser = userRegisService.registerOwner(userRequest);
             
             // Convert to safe Response DTO
             UserDTO.Response response = new UserDTO.Response();
@@ -50,9 +53,17 @@ public class UserRegisController {
             if (savedUser.getSociety() != null) {
                 response.setSocietyName(savedUser.getSociety().getSocietyName());
             }
-            if (savedUser.getRole() != null) {
-                response.setRoleName(savedUser.getRole().getRoleName());
+            // if (savedUser.getRole() != null) {
+            //     response.setRoleName(savedUser.getRole().getRoleName());
+            // }
+
+            if(role.equals("Admin")){
+                response.setRoleName("Owner");
             }
+            if(role.equals("Owner")){
+                response.setRoleName("Tenant");
+            }
+            
             
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
             

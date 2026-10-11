@@ -1,3 +1,7 @@
+
+
+
+
 package com.sms.society.Controller;
 
 import java.util.HashMap;
@@ -52,6 +56,7 @@ public class LoginController {
             responseDTO.setRole(roleId);
             
             if (user.getSociety() != null) {
+                responseDTO.setSocietyId(user.getSociety().getId());
                 responseDTO.setSocietyName(user.getSociety().getSocietyName());
             }
 
@@ -66,6 +71,7 @@ public class LoginController {
             userMap.put("role", roleId);
             userMap.put("roleName", roleName);
             if (user.getSociety() != null) {
+                userMap.put("societyId", user.getSociety().getId());
                 userMap.put("societyName", user.getSociety().getSocietyName());
             }
             responseDTO.setUser(userMap);

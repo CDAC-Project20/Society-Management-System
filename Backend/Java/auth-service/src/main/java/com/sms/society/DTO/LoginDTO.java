@@ -24,6 +24,7 @@ public class LoginDTO {
         private String username;
         private String roleName;
         private Integer role;
+        private Long societyId;
         private String societyName;
         private String token;
         private Object user;

@@ -9,9 +9,13 @@ import org.springframework.stereotype.Repository;
 import com.sms.society.Entities.Notice;
 
 @Repository
-public interface NoticeRepository extends JpaRepository<Notice, Long>{
+public interface NoticeRepository extends JpaRepository<Notice, Long> {
 
     Optional<Notice> findById(Long id);
     
     List<Notice> findBySocietyId(Long societyId);
+
+    List<Notice> findBySocietyIdOrderByIdDesc(Long societyId);
+
+    List<Notice> findByPublishedByIdOrderByIdDesc(Long publishedById);
 }

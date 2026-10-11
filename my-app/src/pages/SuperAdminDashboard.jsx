@@ -1,7 +1,7 @@
 
 
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 
 export default function SuperAdminDashboard() {
@@ -23,48 +23,27 @@ export default function SuperAdminDashboard() {
     }
   }, [location.pathname]);
 
-  // Mock initial data for Societies (with state for approval/rejection)
-  const [societies, setSocieties] = useState([
-    {
-      id: 1,
-      societyName: "Green Valley Heights",
-      registrationNumber: "REG-2024-001",
-      address: "123 Palm Avenue, Sector 15",
-      city: "Mumbai",
-      state: "Maharashtra",
-      pincode: "400001",
-      contactEmail: "admin@greenvalley.com",
-      contactPhone: "+91 9876543210",
-      status: "PENDING",
-      createdAt: "2026-07-20",
-    },
-    {
-      id: 2,
-      societyName: "Royal Garden Apartments",
-      registrationNumber: "REG-2024-002",
-      address: "45 MG Road, Near City Park",
-      city: "Pune",
-      state: "Maharashtra",
-      pincode: "411001",
-      contactEmail: "contact@royalgarden.org",
-      contactPhone: "+91 9812345678",
-      status: "APPROVED",
-      createdAt: "2026-06-15",
-    },
-    {
-      id: 3,
-      societyName: "Sunshine Enclave",
-      registrationNumber: "REG-2024-003",
-      address: "78 Outer Ring Road",
-      city: "Bengaluru",
-      state: "Karnataka",
-      pincode: "560001",
-      contactEmail: "secretariat@sunshine.com",
-      contactPhone: "+91 9900112233",
-      status: "REJECTED",
-      createdAt: "2026-07-01",
-    },
-  ]);
+  const [societies, setSocieties] = useState([]);
+
+  useEffect(() => {
+    if (activeTab === "societies") {
+      fetchSocieties();
+    }
+  }, [activeTab]);
+
+  const fetchSocieties = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/societies");
+      if (response.ok) {
+        const data = await response.json();
+        setSocieties(data);
+      } else {
+        console.error("Failed to fetch societies");
+      }
+    } catch (error) {
+      console.error("Error fetching societies:", error);
+    }
+  };
 
   // Mock initial data for Users
   const [users, setUsers] = useState([
@@ -107,12 +86,28 @@ export default function SuperAdminDashboard() {
   ]);
 
   // Handle Approve / Reject actions for Societies
-  const handleSocietyStatusChange = (id, newStatus) => {
-    setSocieties((prev) =>
-      prev.map((soc) => (soc.id === id ? { ...soc, status: newStatus } : soc))
-    );
-    if (selectedItem?.id === id && activeTab === "societies") {
-      setSelectedItem((prev) => (prev ? { ...prev, status: newStatus } : null));
+  const handleSocietyStatusChange = async (id, newStatus) => {
+    try {
+      const response = await fetch(`http://localhost:8080/societies/${id}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        setSocieties((prev) =>
+          prev.map((soc) => (soc.id === id ? { ...soc, status: newStatus } : soc))
+        );
+        if (selectedItem?.id === id && activeTab === "societies") {
+          setSelectedItem((prev) => (prev ? { ...prev, status: newStatus } : null));
+        }
+      } else {
+        console.error("Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
     }
   };
 
@@ -143,21 +138,29 @@ export default function SuperAdminDashboard() {
     filterStatus === "ALL" ? true : u.status === filterStatus
   );
 
+  const isNestedRoute =
+    location.pathname.includes("payments") ||
+    location.pathname.includes("documents");
+
   return (
     <div className="d-flex" style={{ minHeight: "100vh", backgroundColor: "#f4f6f9" }}>
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main Content Area */}
-      <div className="p-4 flex-grow-1" style={{ maxWidth: "calc(100vw - 240px)" }}>
-        {/* Header */}
-        <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-          <div>
-            <h2 className="fw-bold text-dark mb-1">Super Admin Dashboard</h2>
-            <p className="text-muted mb-0">Manage and approve societies and user accounts</p>
-          </div>
-          {/* Status Filter */}
-          <div className="d-flex align-items-center gap-2">
+      <div className="p-4 flex-grow-1" style={{ maxWidth: "calc(100vw - 250px)" }}>
+        {isNestedRoute ? (
+          <Outlet />
+        ) : (
+          <>
+            {/* Header */}
+            <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+              <div>
+                <h2 className="fw-bold text-dark mb-1">Super Admin Dashboard</h2>
+                <p className="text-muted mb-0">Manage and approve societies and user accounts</p>
+              </div>
+              {/* Status Filter */}
+              <div className="d-flex align-items-center gap-2">
             <span className="fw-semibold text-secondary">Filter Status:</span>
             <select
               className="form-select form-select-sm shadow-sm"
@@ -564,6 +567,8 @@ export default function SuperAdminDashboard() {
               </div>
             </div>
           </div>
+        )}
+          </>
         )}
       </div>
     </div>

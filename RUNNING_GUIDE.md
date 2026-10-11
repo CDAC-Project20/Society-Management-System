@@ -20,12 +20,10 @@ The project is structured into **5 Spring Boot microservices** and **4 Vite Reac
 
 ### 🖥️ Frontend (React / Vite)
 
-| Role | Port | Command | URL |
+| Server Instance | Port | Command | URL |
 | :--- | :--- | :--- | :--- |
-| **SuperAdmin** | **`5173`** | `npm run dev:superadmin` | [http://localhost:5173](http://localhost:5173) |
-| **Secretary**  | **`5174`** | `npm run dev:secretary`  | [http://localhost:5174](http://localhost:5174) |
-| **Owner**      | **`5175`** | `npm run dev:owner`      | [http://localhost:5175](http://localhost:5175) |
-| **Tenant**     | **`5176`** | `npm run dev:tenant`     | [http://localhost:5176](http://localhost:5176) |
+| **Server 1** | **`5173`** | `npm run dev:server1` (or `npm run dev`) | [http://localhost:5173](http://localhost:5173) |
+| **Server 2** | **`5174`** | `npm run dev:server2` | [http://localhost:5174](http://localhost:5174) |
 
 ---
 
@@ -134,12 +132,12 @@ npm run dev:tenant       # Port 5176
   }
   ```
 - **Role Routing**:
-  | Role ID | Role Name | Redirect Route | Default Port |
-  | :--- | :--- | :--- | :--- |
-  | `1` | SuperAdmin | `/superadmin` | `5173` |
-  | `2` | Secretary | `/secretary` | `5174` |
-  | `3` | Owner | `/owner` | `5175` |
-  | `4` | Tenant | `/tenant` | `5176` |
+  | Role ID | Role Name | Redirect Route |
+  | :--- | :--- | :--- |
+  | `1` | SuperAdmin | `/superadmin` |
+  | `2` | Secretary | `/secretary` |
+  | `3` | Owner | `/owner` |
+  | `4` | Tenant | `/tenant` |
 
 ---
 
@@ -159,7 +157,7 @@ All frontend API calls should be targeted at **`http://localhost:8080`**:
 ## ❓ 7. Troubleshooting & FAQs
 
 ### Q: Port is already in use error (`BindException` / `EADDRINUSE`)
-Run `.\stop-all.bat` from the root folder to clear all background processes on ports 8080-8083, 8761, and 5173-5176.
+Run `.\scripts\stop-all.bat` from the root folder to clear all background processes on ports 8080-8083, 8761, and 5173-5174.
 
 ### Q: Login fails with "Server error"
 1. Verify MySQL service is running (`localhost:3306`).

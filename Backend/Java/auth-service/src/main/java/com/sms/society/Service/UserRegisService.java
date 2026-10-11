@@ -1,9 +1,12 @@
 package com.sms.society.Service;
 
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import com.sms.society.DTO.UserDTO;
 import com.sms.society.Entities.Role;
 import com.sms.society.Entities.User;
@@ -18,6 +21,9 @@ public class UserRegisService {
     
     @Autowired
     private RoleRepository roleRepo;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public User registerUser(UserDTO.Request requestDTO, String creatorRole) throws Exception {  
        
@@ -60,7 +66,7 @@ public class UserRegisService {
         newUser.setLastName(requestDTO.getLastName());
         newUser.setEmail(requestDTO.getEmail());
         newUser.setPhoneNumber(requestDTO.getPhoneNumber());
-        newUser.setPassword(requestDTO.getPassword());
+        newUser.setPassword(passwordEncoder.encode(requestDTO.getPassword()));
         newUser.setIsActive(true);
         newUser.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         
@@ -76,5 +82,40 @@ public class UserRegisService {
                 
         // 6. Save and return
         return userRepo.save(newUser);
+    }
+
+    public List<UserDTO.Response> getUsersBySociety(Long societyId) {
+        return userRepo.findBySocietyId(societyId)
+                .stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<UserDTO.Response> getOwnersBySociety(Long societyId) {
+        return userRepo.findBySocietyIdAndRole_RoleNameIgnoreCase(societyId, "Owner")
+                .stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public UserDTO.Response mapToResponseDTO(User user) {
+        UserDTO.Response response = new UserDTO.Response();
+        response.setId(user.getId());
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
+        response.setEmail(user.getEmail());
+        response.setPhoneNumber(user.getPhoneNumber());
+        response.setIsActive(user.getIsActive());
+        response.setCreatedAt(user.getCreatedAt());
+
+        if (user.getSociety() != null) {
+            response.setSocietyId(user.getSociety().getId());
+            response.setSocietyName(user.getSociety().getSocietyName());
+        }
+        if (user.getRole() != null) {
+            response.setRoleId(user.getRole().getId());
+            response.setRoleName(user.getRole().getRoleName());
+        }
+        return response;
     }
 }
