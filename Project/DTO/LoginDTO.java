@@ -18,5 +18,6 @@ public class LoginDTO {
         private String email;
         private String roleName;
         private String societyName;
+        private String token;
     }
 }

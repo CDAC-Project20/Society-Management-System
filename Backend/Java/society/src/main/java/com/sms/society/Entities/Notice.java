@@ -15,7 +15,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="Notices")
+@Table(name="notices")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,11 +33,11 @@ public class Notice {
     @Column(name = "Title", nullable = false, length = 255)
     private String title;
 
-    @Column(name = "Description", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "Description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "PublishedDate")
-    private Timestamp publishedDate;
+    @Column(name = "PublishDate")
+    private Timestamp publishDate;
 
     @Column(name = "ExpiryDate")
     private Timestamp expiryDate;
@@ -45,4 +45,12 @@ public class Notice {
     @ManyToOne
     @JoinColumn(name = "PublishedBy", referencedColumnName = "Id", nullable = false)
     private User publishedBy;
+
+    public Timestamp getPublishedDate() {
+        return publishDate;
+    }
+
+    public void setPublishedDate(Timestamp publishedDate) {
+        this.publishDate = publishedDate;
+    }
 }

@@ -30,8 +30,8 @@ CREATE TABLE `complaints` (
   `Title` varchar(255) NOT NULL,
   `Description` text,
   `Category` varchar(100) DEFAULT NULL,
-  `Priority` enum('Low','Medium','High') DEFAULT 'Medium',
-  `Status` enum('Open','In Progress','Resolved','Closed') DEFAULT 'Open',
+  `Priority` varchar(255) DEFAULT NULL,
+  `Status` varchar(255) DEFAULT NULL,
   `AssignedTo` bigint DEFAULT NULL,
   `CreatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `ResolvedAt` datetime DEFAULT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE `complaints` (
   CONSTRAINT `FK_Complaint_Flat` FOREIGN KEY (`FlatId`) REFERENCES `flats` (`Id`),
   CONSTRAINT `FK_Complaint_RaisedBy` FOREIGN KEY (`RaisedBy`) REFERENCES `users` (`Id`),
   CONSTRAINT `FK_Complaint_Society` FOREIGN KEY (`SocietyId`) REFERENCES `societies` (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -60,7 +60,11 @@ CREATE TABLE `documents` (
   `FlatId` bigint DEFAULT NULL,
   `DocumentName` varchar(255) NOT NULL,
   `DocumentType` varchar(100) DEFAULT NULL,
+  `AccessScope` varchar(20) DEFAULT 'SOCIETY',
   `DocumentPath` varchar(500) NOT NULL,
+  `FileSize` bigint DEFAULT '0',
+  `FileType` varchar(50) DEFAULT NULL,
+  `Description` varchar(500) DEFAULT NULL,
   `UploadedBy` bigint NOT NULL,
   `UploadedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`Id`),
@@ -70,7 +74,7 @@ CREATE TABLE `documents` (
   CONSTRAINT `FK_Document_Flat` FOREIGN KEY (`FlatId`) REFERENCES `flats` (`Id`),
   CONSTRAINT `FK_Document_Society` FOREIGN KEY (`SocietyId`) REFERENCES `societies` (`Id`),
   CONSTRAINT `FK_Document_User` FOREIGN KEY (`UploadedBy`) REFERENCES `users` (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -86,7 +90,7 @@ CREATE TABLE `flats` (
   `FlatNumber` varchar(20) NOT NULL,
   `FloorNumber` int DEFAULT NULL,
   `FlatType` varchar(50) DEFAULT NULL,
-  `Status` enum('Occupied','Vacant') DEFAULT 'Vacant',
+  `Status` varchar(255) DEFAULT NULL,
   `OwnerId` bigint NOT NULL,
   `TenantId` bigint DEFAULT NULL,
   PRIMARY KEY (`Id`),
@@ -96,7 +100,7 @@ CREATE TABLE `flats` (
   CONSTRAINT `FK_Flat_Owner` FOREIGN KEY (`OwnerId`) REFERENCES `users` (`Id`),
   CONSTRAINT `FK_Flat_Society` FOREIGN KEY (`SocietyId`) REFERENCES `societies` (`Id`),
   CONSTRAINT `FK_Flat_Tenant` FOREIGN KEY (`TenantId`) REFERENCES `users` (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=141 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=142 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -166,12 +170,14 @@ CREATE TABLE `notices` (
   `PublishedBy` bigint NOT NULL,
   `PublishDate` datetime DEFAULT CURRENT_TIMESTAMP,
   `ExpiryDate` datetime DEFAULT NULL,
+  `CreatedAt` datetime(6) DEFAULT NULL,
+  `PublishedDate` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`Id`),
   KEY `FK_Notice_Society` (`SocietyId`),
   KEY `FK_Notice_User` (`PublishedBy`),
   CONSTRAINT `FK_Notice_Society` FOREIGN KEY (`SocietyId`) REFERENCES `societies` (`Id`),
   CONSTRAINT `FK_Notice_User` FOREIGN KEY (`PublishedBy`) REFERENCES `users` (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -185,16 +191,25 @@ CREATE TABLE `payments` (
   `Id` bigint NOT NULL AUTO_INCREMENT,
   `MaintenanceId` bigint NOT NULL,
   `PaidBy` bigint NOT NULL,
-  `Amount` decimal(10,2) NOT NULL,
-  `PaymentMode` enum('Cash','UPI','Card','Net Banking') DEFAULT NULL,
+  `Amount` double NOT NULL,
+  `PaymentMode` varchar(50) DEFAULT NULL,
   `TransactionId` varchar(100) DEFAULT NULL,
   `PaymentDate` datetime DEFAULT CURRENT_TIMESTAMP,
-  `Status` enum('Success','Failed','Pending') DEFAULT 'Success',
+  `Status` varchar(50) DEFAULT NULL,
+  `CreatedAt` datetime(6) DEFAULT NULL,
+  `Purpose` varchar(255) DEFAULT NULL,
+  `ReceiptPath` varchar(500) DEFAULT NULL,
+  `FlatId` bigint DEFAULT NULL,
+  `SocietyId` bigint DEFAULT NULL,
   PRIMARY KEY (`Id`),
   KEY `FK_Payment_Maintenance` (`MaintenanceId`),
   KEY `FK_Payment_User` (`PaidBy`),
+  KEY `FK3cqt7fpy755ij4merp66rovch` (`FlatId`),
+  KEY `FKnv5ul88d83x7x3afdoctid67r` (`SocietyId`),
+  CONSTRAINT `FK3cqt7fpy755ij4merp66rovch` FOREIGN KEY (`FlatId`) REFERENCES `flats` (`Id`),
   CONSTRAINT `FK_Payment_Maintenance` FOREIGN KEY (`MaintenanceId`) REFERENCES `maintenance` (`Id`),
-  CONSTRAINT `FK_Payment_User` FOREIGN KEY (`PaidBy`) REFERENCES `users` (`Id`)
+  CONSTRAINT `FK_Payment_User` FOREIGN KEY (`PaidBy`) REFERENCES `users` (`Id`),
+  CONSTRAINT `FKnv5ul88d83x7x3afdoctid67r` FOREIGN KEY (`SocietyId`) REFERENCES `societies` (`Id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=141 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -238,7 +253,7 @@ CREATE TABLE `roles` (
   `RoleName` varchar(50) NOT NULL,
   PRIMARY KEY (`Id`),
   UNIQUE KEY `RoleName` (`RoleName`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -251,7 +266,6 @@ DROP TABLE IF EXISTS `societies`;
 CREATE TABLE `societies` (
   `Id` bigint NOT NULL AUTO_INCREMENT,
   `SocietyName` varchar(200) NOT NULL,
-  
   `Address` varchar(500) DEFAULT NULL,
   `City` varchar(100) DEFAULT NULL,
   `State` varchar(100) DEFAULT NULL,
@@ -259,10 +273,11 @@ CREATE TABLE `societies` (
   `ContactEmail` varchar(255) DEFAULT NULL,
   `ContactPhone` varchar(20) DEFAULT NULL,
   `Password` varchar(255) NOT NULL,
-  `status` enum('Pending','Approved','Rejected') NOT NULL DEFAULT 'Pending',
+  `Status` varchar(20) DEFAULT NULL,
+  `RegistrationNumber` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`Id`),
-  
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  UNIQUE KEY `UKjfxhvorj3phiw3htli9lxfgh2` (`RegistrationNumber`)
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -289,7 +304,7 @@ CREATE TABLE `users` (
   KEY `FK_User_Role` (`RoleId`),
   CONSTRAINT `FK_User_Role` FOREIGN KEY (`RoleId`) REFERENCES `roles` (`Id`),
   CONSTRAINT `FK_User_Society` FOREIGN KEY (`SocietyId`) REFERENCES `societies` (`Id`)
-) ENGINE=InnoDB AUTO_INCREMENT=111 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=122 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -322,4 +337,4 @@ CREATE TABLE `votes` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-24 21:55:27
+-- Dump completed on 2026-08-08 12:49:50

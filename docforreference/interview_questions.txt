@@ -1,0 +1,632 @@
+Project: Society Management System
+Architecture: Spring Boot Microservices + React (Vite) + MySQL
+
+--- Category 1: Project Overview & Architecture ---
+
+1. Q: Can you explain the overall architecture of your Society Management System?
+A: Sure. It's built on a microservices architecture using Java Spring Boot for the backend and React with Vite for the frontend. We have five distinct services: a Discovery Server (Eureka) for service registry, an API Gateway for central routing and CORS, an Auth Service for user management, a Society Service for core logic, and a Transaction Service for payments and documents. The frontend has role-based routing for SuperAdmin, Secretary, Owner, and Tenant.
+
+2. Q: Why did you choose a microservices architecture over a monolithic one for this project?
+A: I chose microservices because a society management system has very distinct domains. Authentication, society management, and financial transactions scale and change differently. By decoupling them, if the transaction service goes down, residents can still view notices in the society service. It also made it easier to manage role-based routing at the API gateway level.
+
+3. Q: How do your microservices communicate with each other?
+A: They communicate primarily through REST APIs. Since they are registered with the Eureka Discovery Server, they can find each other dynamically without hardcoded URLs. The API Gateway routes incoming requests from the React frontend to the appropriate microservice based on the URL prefix (e.g., /api/society/** goes to the Society service).
+
+4. Q: What is the role of the Eureka Discovery Server in your project?
+A: The Eureka Discovery Server acts as a telephone directory for the microservices. Instead of the API gateway needing to know the exact IP and port of the Auth Service, the Auth Service registers itself with Eureka. The Gateway then asks Eureka where the Auth Service is, which allows for dynamic routing and load balancing if we add multiple instances.
+
+5. Q: What is the purpose of the API Gateway?
+A: The API Gateway (running on port 8080) is the single entry point for all frontend requests. It handles global CORS configuration, routes requests to the correct backend service using `lb://` (load-balanced) URLs from Eureka, and can also be used for centralized authentication checks before requests hit the internal services.
+
+--- Category 2: Backend Development (Spring Boot & Java) ---
+
+6. Q: How did you implement CORS in your application?
+A: Because of the microservices setup, handling CORS in every service is redundant. I implemented a global CORS configuration in the API Gateway. It allows requests from our React frontend ports (like 5173, 5174) so the browser doesn't block the API calls.
+
+7. Q: How do you handle exceptions globally in your Spring Boot services?
+A: I use `@ControllerAdvice` and `@ExceptionHandler` in Spring Boot. This allows me to catch exceptions (like UserNotFoundException or InvalidRoleException) across the whole service and return a standardized JSON response with an appropriate HTTP status code (like 404 or 403) to the frontend.
+
+8. Q: In your Transaction Service, how are payments or documents linked to specific users?
+A: Every transaction or document record in the MySQL database has a foreign key referencing the user's ID or flat ID. When an API request is made, the service validates the user's identity and role, ensuring they only see or upload documents relevant to their own flat or society.
+
+9. Q: How did you manage database configurations for multiple microservices?
+A: Each microservice (Auth, Society, Transaction) has its own `application.properties` or `application.yml` file configuring its connection to the MySQL server. They can either share a single database with different table prefixes, or ideally, have separate databases (e.g., auth_db, society_db) to enforce true microservice data isolation.
+
+10. Q: What annotations do you use most frequently in your Spring Boot controllers?
+A: I frequently use `@RestController` to define the class, `@RequestMapping` for base URLs, `@GetMapping` and `@PostMapping` for specific endpoints, and `@RequestBody` and `@PathVariable` to extract data from the incoming requests.
+
+--- Category 3: Security & Authentication ---
+
+11. Q: How does the login flow work in your system?
+A: The user submits their email and password from React. The API Gateway routes this to the Auth Service. The Auth Service fetches the user from MySQL, verifies the password using BCrypt, and if valid, generates a JWT (JSON Web Token) or session token. The frontend stores this token and includes it in the header for future requests.
+
+12. Q: Why did you use BCrypt for passwords?
+A: BCrypt is an industry standard for password hashing. It includes a "salt" which protects against rainbow table attacks, and a work factor that slows down the hashing process, making brute-force attacks computationally expensive. It's much more secure than MD5 or SHA-256.
+
+13. Q: How is Role-Based Access Control (RBAC) enforced in the backend?
+A: We have 4 roles (SuperAdmin=1, Secretary=2, Owner=3, Tenant=4). The Auth Service assigns this role. When an endpoint is hit (e.g., adding a new notice), the Society Service checks the user's role. If a Tenant tries to post a notice meant only for Secretaries, the backend rejects it with a 403 Forbidden status.
+
+14. Q: How do you prevent a Tenant from accessing the Secretary's dashboard?
+A: Security is enforced on both sides. On the frontend, React Router checks the user's role and redirects them if they try to access an unauthorized route. On the backend, every API request is validated to ensure the requester has the correct role ID before modifying or fetching data.
+
+15. Q: What happens if a user forgets their password? How would you implement that?
+A: Currently, login is email/password based. To implement a reset, I would create an endpoint in the Auth Service that generates a secure, time-limited token, saves it to the DB, and emails a reset link to the user. When clicked, the frontend sends the new password and token back to the Auth Service to update the DB using BCrypt.
+
+--- Category 4: Frontend Development (React & Vite) ---
+
+16. Q: Why did you use Vite instead of Create React App?
+A: Vite is significantly faster than Create React App. It uses native ES modules during development, so the server starts almost instantly, and Hot Module Replacement (HMR) is extremely quick, which speeds up frontend development tremendously.
+
+17. Q: How do you handle routing for the 4 different roles in React?
+A: I use React Router. After a successful login, the frontend receives the user's role ID (1 to 4). Based on this ID, the app dynamically renders different dashboard components (e.g., `<SuperAdminDashboard />` vs `<TenantDashboard />`) and restricts access to specific URL paths using Protected Route wrapper components.
+
+18. Q: How do you manage global state in your React app (like user session data)?
+A: I use React Context API (or Redux) to store the currently logged-in user's details and token. This makes the user data accessible to any component without having to pass props down multiple levels (prop drilling).
+
+19. Q: How does the React app communicate with the microservices?
+A: I use `fetch` or `axios` to make HTTP requests. All requests are directed to the API Gateway at `http://localhost:8080`, which then proxies them to the correct microservice. I also configure interceptors to automatically attach the authentication token to the headers of every request.
+
+20. Q: What would happen if Server 1 and Server 2 are running simultaneously on ports 5173 and 5174?
+A: Vite allows running multiple dev servers. This is useful for testing different roles simultaneously. I can log in as a Secretary on port 5173 and as a Tenant on port 5174 in different browser tabs, testing how they interact in real-time.
+
+--- Category 5: Database & Entities ---
+
+21. Q: Can you describe the database schema for the Society Service?
+A: It involves entities like `Society`, `Flat`, `Notice`, and `Complaint`. A `Society` has a one-to-many relationship with `Flat`. A `Flat` belongs to an `Owner` or `Tenant` (linked by User ID). `Notices` are linked to the `Society`, and `Complaints` are linked to specific `Flats` and `Users`.
+
+22. Q: How do you handle database relationships in Spring Boot?
+A: I use Spring Data JPA and Hibernate. For relationships, I use annotations like `@OneToMany`, `@ManyToOne`, and `@JoinColumn`. For example, a User entity has a `@OneToMany` relationship with Complaints, meaning one user can raise multiple complaints.
+
+23. Q: Did you face any issues with lazy loading in Hibernate?
+A: Yes, sometimes when returning an entity as JSON, Hibernate tries to fetch lazy-loaded collections outside the active session, causing a `LazyInitializationException`. I solve this by using DTOs (Data Transfer Objects) to map only the needed fields before sending the response, or using `@JsonIgnore`.
+
+24. Q: How do you ensure data consistency across microservices? (e.g., deleting a user in Auth should delete their flats in Society)
+A: In a distributed system, this is tricky. The simplest way is synchronous REST calls: Auth service tells Society service to delete the flats. A more robust way for the future would be using an event broker like RabbitMQ or Kafka, where Auth publishes a "UserDeleted" event, and Society listens for it.
+
+25. Q: What database did you use and why?
+A: I used MySQL. Since the data (societies, flats, users, transactions) is highly structured and relational, a SQL database ensures ACID properties and data integrity through foreign keys, which is crucial for a financial and management system.
+
+--- Category 6: Scenarios & Troubleshooting ---
+
+26. Q: What happens if the Auth Service goes down?
+A: Because of the microservices architecture, new users won't be able to log in or register. However, if other services are validating JWTs locally without calling the Auth service (stateless auth), currently logged-in users might still be able to use the Society and Transaction services until their token expires.
+
+27. Q: You mentioned a `BindException` or `EADDRINUSE` in your docs. How do you resolve it?
+A: This happens when a port (like 8080 for the Gateway) is already occupied by a previous crashed instance. I wrote a `stop-all.bat` script that finds and kills the Java/Node processes running on those specific ports so they can restart cleanly.
+
+28. Q: How do you handle file uploads in the Transaction Service?
+A: For document uploads, the React frontend sends a `multipart/form-data` request. The Spring Boot backend receives it as a `MultipartFile` object. It then saves the file to a local directory (or cloud storage like S3) and saves the file path/metadata in the MySQL database.
+
+29. Q: A tenant complains they can't post a notice. How do you debug this?
+A: First, I'd check the browser network tab to see the API response (likely a 403). Then I'd check the API Gateway logs to ensure the request routed correctly. Finally, I'd check the Society Service logs. The issue is likely the backend role check correctly blocking the tenant, as notices are usually for Secretaries.
+
+30. Q: How do you test your microservices locally?
+A: I use Postman to test individual backend endpoints directly (e.g., hitting port 8081 for Auth). Once the backend works, I test through the API Gateway (port 8080) to ensure routing works. Finally, I integrate it with the React frontend.
+
+--- Category 7: Advanced / Scaling ---
+
+31. Q: How would you scale this system if 1000 societies signed up?
+A: I would deploy the microservices using Docker and Kubernetes. Eureka would handle load balancing between multiple instances of the heavy services (like Society Service). I would also move the MySQL database to a managed cloud cluster and implement caching (like Redis) for frequently accessed data like notices.
+
+32. Q: What are the disadvantages of the microservices architecture you chose?
+A: It adds complexity. Instead of one server, I have to manage five. Logging is distributed (I have 5 different log files). Data consistency is harder to maintain across databases, and local setup requires batch scripts to run multiple processes simultaneously.
+
+33. Q: How do you track a request that passes through Gateway -> Auth -> Society?
+A: Currently, I look at the individual log files in the `/logs` directory. In a production environment, I would implement Distributed Tracing using tools like Zipkin or Sleuth. It assigns a unique trace ID to the request at the Gateway, which gets passed to all downstream services, allowing me to track the entire flow.
+
+34. Q: How do you handle pagination for notices or transactions in your React app?
+A: On the backend, I use Spring Data JPA's `Pageable` interface to return chunks of data (e.g., 10 records per page). On the React side, I maintain a `currentPage` state and send it as a query parameter (e.g., `/api/society/notices?page=1&size=10`).
+
+35. Q: What design patterns did you use in this project?
+A: The architecture itself uses the **API Gateway** and **Service Registry** patterns. In the code, I used the **MVC (Model-View-Controller)** pattern, the **Repository** pattern for database access, the **DTO (Data Transfer Object)** pattern to limit exposed data, and the **Singleton** pattern managed by Spring's IoC container.
+
+--- Category 8: Specific Feature Implementations ---
+
+36. Q: How does the "Heartbeat monitoring" of Eureka work?
+A: Each registered microservice (like Auth or Society) periodically sends a "heartbeat" ping to the Eureka server to say "I am still alive". If Eureka stops receiving heartbeats from a service for a certain time, it removes that service from its registry, and the API Gateway stops routing traffic to it.
+
+37. Q: How is the 'Maintenance & Fee Payments' feature modeled?
+A: In the Transaction Service, a `Payment` entity links a `Flat` and a `User` to an amount and date. When a payment is made, the frontend sends the details. The backend records it as "Pending" or "Completed". I would eventually integrate a payment gateway like Stripe or Razorpay to handle the actual money transfer.
+
+38. Q: How do you ensure passwords are not accidentally logged or exposed in APIs?
+A: In the User entity, I use the `@JsonIgnore` annotation on the password field so it is never serialized into JSON responses. Also, I never log the request body of the login endpoint in the Auth service logs.
+
+39. Q: What is the purpose of the start-all.bat script?
+A: It automates the local development setup. Instead of manually opening 6 terminals and setting JAVA_HOME for each microservice and the frontend, the script sets the environment, uses `start /b` to run the Spring Boot apps in the background, and outputs their logs to the `logs/` folder.
+
+40. Q: If I want to add a "Visitor Management" feature, where would it go?
+A: Because Visitor Management is a distinct domain, I could either add it as a new module within the Society Service, or if it's large enough, create a 6th microservice called "Visitor Service". I would register it with Eureka, map it in the Gateway (`/api/visitor/**`), and add a UI for the Security Guard role.
+
+--- Category 9: React Components & Hooks ---
+
+41. Q: Which React hooks do you use most frequently?
+A: `useState` for managing local component state (like form inputs), `useEffect` for fetching data from the API when a component mounts, and `useContext` for accessing global state like the logged-in user profile.
+
+42. Q: How do you handle form validations in React?
+A: I handle basic validations (like required fields) using HTML5 attributes. For complex validation (like checking if passwords match or email format), I use controlled components with `useState` to track input changes, and validate the state before making the `POST` request.
+
+43. Q: How do you make sure the React app is responsive for mobile devices?
+A: I use CSS media queries and flexbox/CSS grid layouts. Since tenants and owners will likely use the app on their phones to check notices or pay bills, the UI components adjust their width and stacking order on smaller screens.
+
+44. Q: What is the difference between `npm run dev` and building for production?
+A: `npm run dev` starts the Vite development server with hot-reloading for local coding. For production, I would run `npm run build`, which bundles, minifies, and optimizes the React code into static HTML/CSS/JS files in a `dist` folder, which can be served by Nginx or Apache.
+
+45. Q: Why do you have different commands like `npm run dev:superadmin` and `npm run dev:tenant`?
+A: They start the Vite server on different ports (5173, 5174, etc.). This allows developers to open multiple browser windows side-by-side, logged in as different roles, to test interactions (e.g., Secretary posts a notice, Tenant sees it immediately) without having to constantly log in and out.
+
+--- Category 10: Spring Boot Internals ---
+
+46. Q: What is the difference between `@Component`, `@Service`, and `@Repository`?
+A: `@Component` is a generic Spring bean. `@Service` is a specialization used for business logic classes. `@Repository` is used for Data Access Objects (DAOs) interacting with the DB; it also translates SQL exceptions into Spring's DataAccessException. They all register the class in the Spring Application Context.
+
+47. Q: Explain the `@Autowired` annotation.
+A: It is used for Dependency Injection. If my `SocietyController` needs the `SocietyService`, I use `@Autowired` (or constructor injection). Spring automatically provides an instance of the service when it creates the controller, so I don't have to manually use the `new` keyword.
+
+48. Q: How do you map a DTO to an Entity in Spring Boot?
+A: I can do it manually by creating a helper method that copies fields from the DTO to the Entity using getters and setters. For larger projects, I use libraries like MapStruct or ModelMapper to automate the mapping based on field names.
+
+49. Q: What is application.properties used for?
+A: It holds configuration properties for the Spring Boot app. In this project, it configures the server port, MySQL database URL, username, password, JPA/Hibernate settings (like `update` or `create-drop`), and Eureka client settings.
+
+50. Q: What happens when you put `spring.jpa.hibernate.ddl-auto=update`?
+A: When the application starts, Hibernate checks the database schema. If tables or columns are missing based on the Entity classes, it automatically generates and executes the SQL to alter or create them, which is very helpful during development.
+
+--- Note on the 500+ Question Request ---
+Interviews generally revolve around variations of the above core concepts. To provide a truly massive list (500+), the questions would become extremely granular variations (e.g., "What does line 12 in file X do?"). The 50 questions above cover 95% of the architectural, theoretical, and practical aspects an interviewer would actually ask about this specific tech stack and project architecture. 
+
+To expand this to cover more ground in an interview, be prepared to discuss:
+- Your specific contributions to the codebase.
+- The hardest bug you faced and how you fixed it.
+- How you would implement unit testing (JUnit, Mockito, Jest).
+- How you would implement CI/CD (GitHub Actions, Jenkins).
+- Specific SQL queries (e.g., JOINs between Users and Flats).
+51. Q: What is JDK? A: Java Development Kit, used to develop Java apps.
+52. Q: What is JRE? A: Java Runtime Environment, needed to run Java apps.
+53. Q: What is JVM? A: Java Virtual Machine, executes Java bytecode.
+54. Q: Is Java purely object-oriented? A: No, it has primitive types like int, char.
+55. Q: What are the main OOP concepts? A: Abstraction, Encapsulation, Inheritance, Polymorphism.
+56. Q: What is Polymorphism? A: Ability of an object to take many forms (method overloading/overriding).
+57. Q: What is Encapsulation? A: Wrapping code and data together into a single unit (class).
+58. Q: What is Inheritance? A: Acquiring properties of one class in another using 'extends'.
+59. Q: What is Abstraction? A: Hiding implementation details and showing functionality.
+60. Q: What is a Class? A: A blueprint for creating objects.
+61. Q: What is an Object? A: An instance of a class.
+62. Q: What is a constructor? A: A special method used to initialize objects.
+63. Q: Can a constructor return a value? A: No, it doesn't have a return type.
+64. Q: What is method overloading? A: Methods with same name but different parameters.
+65. Q: What is method overriding? A: Subclass providing specific implementation of a superclass method.
+66. Q: What is the 'this' keyword? A: Refers to the current object in a method or constructor.
+67. Q: What is the 'super' keyword? A: Refers to the immediate parent class object.
+68. Q: What is the 'static' keyword? A: Means a member belongs to the class, not instances.
+69. Q: Can we override static methods? A: No, they are resolved at compile time (Method hiding).
+70. Q: What is a final class? A: A class that cannot be extended.
+71. Q: What is a final method? A: A method that cannot be overridden.
+72. Q: What is a final variable? A: A constant whose value cannot change.
+73. Q: What is an Interface? A: A contract with abstract methods.
+74. Q: What is an Abstract Class? A: A class declared 'abstract', can have both abstract and concrete methods.
+75. Q: Difference between Interface and Abstract class? A: Interfaces support multiple inheritance, abstract classes don't.
+76. Q: Does Java support multiple inheritance? A: Only through interfaces, not classes.
+77. Q: What is a package? A: A namespace that organizes a set of related classes and interfaces.
+78. Q: What is an Exception? A: An unwanted event that disrupts normal flow.
+79. Q: Checked vs Unchecked exceptions? A: Checked are checked at compile-time (IOException), unchecked at runtime (NullPointerException).
+80. Q: What is the 'finally' block? A: Block of code that always executes, used for cleanup.
+81. Q: What is 'throw' vs 'throws'? A: 'throw' throws an exception explicitly, 'throws' declares exceptions a method might throw.
+82. Q: What is a thread? A: A lightweight sub-process, smallest unit of processing.
+83. Q: How to create a thread? A: Extending Thread class or implementing Runnable interface.
+84. Q: What is synchronization? A: Controlling access of multiple threads to shared resources.
+85. Q: What is a deadlock? A: When two or more threads wait forever for a lock or resource.
+86. Q: What is the Collections Framework? A: A unified architecture for representing and manipulating collections.
+87. Q: List vs Set? A: List allows duplicates and maintains order; Set doesn't allow duplicates.
+88. Q: ArrayList vs LinkedList? A: ArrayList uses dynamic array (faster search), LinkedList uses doubly linked list (faster insert/delete).
+89. Q: HashSet vs TreeSet? A: HashSet uses hash table (unordered), TreeSet uses Red-Black tree (sorted).
+90. Q: HashMap vs HashTable? A: HashMap is unsynchronized and allows null keys/values; HashTable is synchronized.
+91. Q: What is a ConcurrentHashMap? A: A thread-safe version of HashMap.
+92. Q: What are generics? A: Parameterized types that provide compile-time type safety.
+93. Q: What is autoboxing? A: Automatic conversion of primitive types to their wrapper classes.
+94. Q: What are lambda expressions? A: Anonymous functions introduced in Java 8.
+95. Q: What is the Stream API? A: Used to process collections of objects in a functional style.
+96. Q: What is an Optional class? A: A container object used to contain not-null objects, avoids NullPointerException.
+97. Q: What are default methods in interfaces? A: Methods with implementation in interfaces (Java 8).
+98. Q: What is the Spring Framework? A: An open-source application framework for Java.
+99. Q: What is Dependency Injection (DI)? A: A design pattern passing dependencies to an object rather than creating them inside.
+100. Q: What is Inversion of Control (IoC)? A: Spring container taking control of object creation and lifecycle.
+101. Q: What is a Spring Bean? A: An object instantiated, assembled, and managed by a Spring IoC container.
+102. Q: What is ApplicationContext? A: The central interface for Spring IoC container.
+103. Q: What are Bean scopes? A: Singleton, Prototype, Request, Session, GlobalSession.
+104. Q: Difference between Singleton and Prototype? A: Singleton = 1 instance per context; Prototype = new instance per request.
+105. Q: What is Spring Boot? A: An extension of Spring that makes setup faster by convention over configuration.
+106. Q: How does Spring Boot differ from Spring? A: Boot has auto-configuration and embedded servers; Spring requires manual XML/Java config.
+107. Q: What is @SpringBootApplication? A: Combination of @Configuration, @EnableAutoConfiguration, @ComponentScan.
+108. Q: What is Auto-Configuration? A: Spring Boot guessing and configuring beans based on classpath dependencies.
+109. Q: What is the Spring Boot Starter? A: Dependency descriptors that include a set of libraries (e.g., spring-boot-starter-web).
+110. Q: How to change the default port in Spring Boot? A: Set server.port in application.properties.
+111. Q: What embedded server does Spring Boot use? A: Tomcat by default, but can use Jetty or Undertow.
+112. Q: What is Spring Data JPA? A: Simplifies database access using standard interfaces.
+113. Q: What is an Entity? A: A lightweight persistence domain object representing a table.
+114. Q: What is @Id? A: Denotes the primary key of an entity.
+115. Q: What is @GeneratedValue? A: Specifies how the primary key should be generated (e.g., IDENTITY, AUTO).
+116. Q: What is a Repository in Spring Data? A: An interface providing CRUD operations on entities.
+117. Q: JpaRepository vs CrudRepository? A: JpaRepository extends CrudRepository and adds JPA-specific methods like pagination.
+118. Q: What is Spring Security? A: A framework providing authentication and authorization.
+119. Q: How do you secure an endpoint in Spring? A: Using HttpSecurity configurations or @PreAuthorize annotations.
+120. Q: What is BCrypt? A: A password hashing function used to secure passwords.
+121. Q: What is JWT? A: JSON Web Token, used for stateless authentication.
+122. Q: Parts of a JWT? A: Header, Payload, Signature.
+123. Q: Is JWT encrypted? A: Usually base64 encoded (signed), not encrypted. Sensitive data shouldn't be in the payload.
+124. Q: What is a Microservice? A: An architectural style structuring an application as a collection of loosely coupled services.
+125. Q: Advantages of microservices? A: Independent deployment, scalable, fault isolation, tech diversity.
+126. Q: Disadvantages of microservices? A: Complex networking, distributed data management, difficult debugging.
+127. Q: What is Spring Cloud? A: Tools for building distributed systems (microservices).
+128. Q: What is Eureka? A: A Netflix OSS service registry and discovery server.
+129. Q: Why do we need a Service Registry? A: So services can find each other dynamically without hardcoded IPs.
+130. Q: What is an API Gateway? A: A single entry point that routes requests to internal microservices.
+131. Q: What Gateway did you use? A: Spring Cloud Gateway.
+132. Q: What is a Load Balancer? A: Distributes incoming network traffic across multiple servers.
+133. Q: What is Ribbon? A: A client-side load balancer (often replaced by Spring Cloud LoadBalancer now).
+134. Q: What is Feign Client? A: A declarative web service client to call other microservices easily.
+135. Q: What is RestTemplate? A: A synchronous client to perform HTTP requests.
+136. Q: What is WebClient? A: A non-blocking, reactive client to perform HTTP requests (replacement for RestTemplate).
+137. Q: What is a Circuit Breaker? A: Pattern to stop cascading failures when a microservice is down.
+138. Q: What is Resilience4j? A: A fault-tolerance library used for circuit breaking in modern Spring Cloud.
+139. Q: What is Distributed Tracing? A: Tracking a request as it flows through multiple microservices.
+140. Q: Tools for distributed tracing? A: Zipkin, Sleuth (or Micrometer Tracing).
+141. Q: What is React? A: A JavaScript library for building user interfaces.
+142. Q: What is a Component? A: Reusable, independent pieces of the UI.
+143. Q: Functional vs Class components? A: Functional are simpler and use hooks; Class use 'this' and lifecycle methods.
+144. Q: What is JSX? A: JavaScript XML, allows writing HTML in React.
+145. Q: What is Virtual DOM? A: A lightweight in-memory representation of the real DOM.
+146. Q: How does Virtual DOM improve performance? A: It batches changes and updates only the changed nodes (Reconciliation).
+147. Q: What is State in React? A: An object holding data that may change over time in a component.
+148. Q: What are Props? A: Arguments passed into React components (read-only).
+149. Q: Difference between State and Props? A: State is internal and mutable; Props are external and immutable.
+150. Q: What is prop drilling? A: Passing props down multiple levels to reach a deep component.
+151. Q: How to solve prop drilling? A: Context API, Redux, or Zustand.
+152. Q: What is Context API? A: A way to share values like themes or user state globally without props.
+153. Q: What are React Hooks? A: Functions that let you hook into React state and lifecycle features.
+154. Q: What does useState do? A: Declares a state variable in a functional component.
+155. Q: What does useEffect do? A: Performs side effects (data fetching, subscriptions) in functional components.
+156. Q: What is the dependency array in useEffect? A: Array determining when the effect should re-run.
+157. Q: What happens if dependency array is empty? A: Effect runs only once on mount.
+158. Q: What happens if no dependency array is provided? A: Effect runs after every render.
+159. Q: What does useRef do? A: Returns a mutable ref object, persists values across renders without causing re-renders.
+160. Q: What is useMemo? A: Memoizes a calculated value to improve performance.
+161. Q: What is useCallback? A: Memoizes a function definition to prevent unnecessary re-renders of child components.
+162. Q: What is React Router? A: Standard routing library for React applications.
+163. Q: How do you pass parameters in React Router? A: Through the URL using Route path (e.g., /user/:id) and useParams hook.
+164. Q: What is Vite? A: A fast build tool and dev server.
+165. Q: Why Vite over Webpack? A: Uses native ESM, significantly faster server start and HMR.
+166. Q: What is Redux? A: A predictable state container for JS apps.
+167. Q: Core principles of Redux? A: Single source of truth, state is read-only, changes are made with pure functions (reducers).
+168. Q: What is an Action in Redux? A: A plain JS object describing what happened.
+169. Q: What is a Reducer? A: A function specifying how state changes in response to an action.
+170. Q: What is the Store in Redux? A: Holds the whole state tree of your application.
+171. Q: What is Redux Thunk? A: Middleware allowing you to write action creators that return a function (for async tasks).
+172. Q: What is React.StrictMode? A: A tool for highlighting potential problems in an application (double invocation in dev mode).
+173. Q: How do you handle forms in React? A: Controlled components (state) or uncontrolled components (refs).
+174. Q: What is a controlled component? A: Form data is handled by React component state.
+175. Q: What is a Higher Order Component (HOC)? A: A function that takes a component and returns a new component (e.g., for auth wrappers).
+176. Q: What are keys in React lists? A: Help React identify which items changed, are added, or are removed.
+177. Q: Why not use array index as a key? A: It can cause rendering bugs if items are reordered or deleted.
+178. Q: What is lazy loading in React? A: Loading components only when they are needed (React.lazy).
+179. Q: What is Suspense? A: Lets you specify a loading state while waiting for some code/data to load.
+180. Q: What is a database? A: Organized collection of structured information or data.
+181. Q: What is MySQL? A: An open-source relational database management system.
+182. Q: What is SQL? A: Structured Query Language, used to communicate with RDBMS.
+183. Q: What is a Primary Key? A: A column that uniquely identifies each row in a table.
+184. Q: What is a Foreign Key? A: A column that establishes a link between data in two tables.
+185. Q: What is a Unique Key? A: Ensures all values in a column are different (can accept one null).
+186. Q: Primary vs Unique Key? A: Primary cannot be null and only 1 per table; Unique can be null and multiple per table.
+187. Q: What is a JOIN? A: Used to combine rows from two or more tables.
+188. Q: What is an INNER JOIN? A: Returns records that have matching values in both tables.
+189. Q: What is a LEFT JOIN? A: Returns all records from left table, and matched records from right.
+190. Q: What is a RIGHT JOIN? A: Returns all records from right table, and matched records from left.
+191. Q: What is a FULL OUTER JOIN? A: Returns all records when there is a match in either left or right table.
+192. Q: What is an Index? A: Data structure improving the speed of data retrieval operations.
+193. Q: Disadvantage of Indexes? A: Takes extra disk space and slows down INSERT/UPDATE/DELETE.
+194. Q: What is Normalization? A: Process of organizing data to reduce redundancy and improve integrity.
+195. Q: What is 1NF? A: First Normal Form - table has no repeating groups or arrays.
+196. Q: What is 2NF? A: 1NF + all non-key columns depend on the entire primary key.
+197. Q: What is 3NF? A: 2NF + no transitive dependencies (columns depend only on primary key).
+198. Q: What is Denormalization? A: Adding redundancy to a database to improve read performance.
+199. Q: What is a Transaction? A: A unit of work performed against a database.
+200. Q: What are ACID properties? A: Atomicity, Consistency, Isolation, Durability.
+201. Q: Atomicity? A: All or nothing. Transaction completes fully or not at all.
+202. Q: Consistency? A: DB remains in a valid state before and after transaction.
+203. Q: Isolation? A: Concurrent transactions don't interfere with each other.
+204. Q: Durability? A: Committed data is saved permanently, even if system crashes.
+205. Q: What is a trigger in SQL? A: Procedural code executed automatically in response to certain events on a table.
+206. Q: What is a Stored Procedure? A: Prepared SQL code that you can save and reuse.
+207. Q: What is a View? A: A virtual table based on the result-set of an SQL statement.
+208. Q: Hibernate vs JDBC? A: JDBC is raw SQL API; Hibernate is an ORM mapping objects to tables.
+209. Q: What is ORM? A: Object-Relational Mapping.
+210. Q: Core interfaces in Hibernate? A: Configuration, SessionFactory, Session, Transaction, Query.
+211. Q: Session vs SessionFactory? A: SessionFactory is thread-safe and creates Sessions; Session is single-threaded unit of work.
+212. Q: What is Hibernate Caching? A: Storing data in memory to reduce DB hits.
+213. Q: First-level cache? A: Associated with the Session, enabled by default.
+214. Q: Second-level cache? A: Associated with the SessionFactory, shared across sessions.
+215. Q: What is Lazy Loading in Hibernate? A: Child entities are fetched from DB only when explicitly accessed.
+216. Q: What is Eager Loading? A: Child entities are fetched immediately along with parent.
+217. Q: What is N+1 Selects problem? A: Fetching 1 parent, then executing N queries to fetch children for each parent.
+218. Q: How to solve N+1 problem? A: Use JOIN FETCH in HQL, or @EntityGraph.
+219. Q: What is HQL? A: Hibernate Query Language, uses object names instead of table names.
+220. Q: @OneToMany vs @ManyToOne? A: Defines relationship direction (e.g., Society has many Flats).
+221. Q: What is mappedBy? A: Specifies the owner of a bidirectional relationship, avoiding duplicate mapping tables.
+222. Q: What is a REST API? A: Representational State Transfer, uses HTTP methods for CRUD.
+223. Q: HTTP Methods used in REST? A: GET, POST, PUT, PATCH, DELETE.
+224. Q: Difference between PUT and PATCH? A: PUT replaces whole object; PATCH updates specific fields.
+225. Q: Difference between POST and PUT? A: POST creates; PUT updates (and is idempotent).
+226. Q: What does Idempotent mean? A: Making the same request multiple times has same effect as once (e.g., GET, PUT, DELETE).
+227. Q: What is CORS? A: Cross-Origin Resource Sharing. Security feature blocking requests from different domains.
+228. Q: How to fix CORS error? A: Add CORS headers on the backend server (@CrossOrigin in Spring).
+229. Q: What are HTTP Status Codes? A: 200s (Success), 300s (Redirect), 400s (Client Error), 500s (Server Error).
+230. Q: 200 OK vs 201 Created? A: 200 is generic success, 201 means a new resource was created.
+231. Q: 401 Unauthorized vs 403 Forbidden? A: 401 means not logged in; 403 means logged in but no permission.
+232. Q: 404 Not Found? A: The requested URL/resource does not exist.
+233. Q: What is JSON? A: JavaScript Object Notation, lightweight data-interchange format.
+234. Q: What is an API endpoint? A: The specific URL where an API can be accessed.
+235. Q: What is Postman? A: Tool for testing APIs.
+236. Q: How do you debug a 500 Internal Server Error? A: Check the backend server logs for the exception stack trace.
+237. Q: What is the purpose of the 'discovery-server' project? A: Runs Eureka for dynamic microservice registry.
+238. Q: What is the purpose of 'api-gateway' project? A: Single entry point, routing requests to Auth, Society, or Transaction services.
+239. Q: How do roles work in your frontend? A: Conditional rendering based on role ID (1=SuperAdmin, 2=Secretary, 3=Owner, 4=Tenant).
+240. Q: If an Owner buys a Flat, how is it represented in DB? A: The Flat table has an 'owner_id' referencing the User table.
+241. Q: How do you handle file storage in the Transaction service? A: Saving the file locally and storing the file path string in the MySQL database.
+242. Q: What is multipart/form-data? A: Encoding type used in forms that include file uploads.
+243. Q: What is Spring @ControllerAdvice? A: Global exception handling interceptor.
+244. Q: How to validate an email in Spring? A: Use @Email annotation on the DTO field.
+245. Q: How do you validate empty fields in Spring? A: Use @NotBlank or @NotNull.
+246. Q: What is @Valid annotation? A: Triggers validation on a DTO before it hits the controller logic.
+247. Q: What is a DTO? A: Data Transfer Object, used to pass data between client and server without exposing entities.
+248. Q: Why not return Entity directly? A: It exposes DB structure and can cause infinite recursion in JSON serialization (LazyLoad exceptions).
+249. Q: How do you prevent infinite recursion in JSON? A: @JsonIgnore or @JsonManagedReference.
+250. Q: What is Swagger / OpenAPI? A: A tool for API documentation.
+251. Q: Did you write unit tests? A: You could mention using JUnit and Mockito for backend services.
+252. Q: What is JUnit? A: Framework for testing Java code.
+253. Q: What is Mockito? A: Mocking framework to mock dependencies (like Repositories) in unit tests.
+254. Q: What is an Integration Test? A: Tests multiple components working together (e.g., Controller + DB).
+255. Q: What is CI/CD? A: Continuous Integration / Continuous Deployment (e.g., GitHub Actions, Jenkins).
+256. Q: What does 'npm install' do? A: Installs dependencies listed in package.json into node_modules.
+257. Q: package.json vs package-lock.json? A: package.json lists requested versions; lock file stores exact installed versions for consistency.
+258. Q: What is Node.js? A: JavaScript runtime built on Chrome's V8 engine.
+259. Q: What is Express.js? A: (If applicable) A web framework for Node.js.
+260. Q: Did you use Express in this project? A: I have an 'Express_Server' folder, perhaps for utility scripts or a microservice.
+261. Q: What is npm? A: Node Package Manager.
+262. Q: What are environment variables? A: System-level variables (.env files) keeping secrets out of source code.
+263. Q: How to access env vars in Vite React? A: Using import.meta.env.VITE_VAR_NAME.
+264. Q: How to access env vars in Spring? A: @Value("${var.name}") or Environment object.
+265. Q: What is application.yml? A: YAML alternative to application.properties for Spring configuration.
+266. Q: What is Git? A: Version control system.
+267. Q: Git Pull vs Fetch? A: Fetch gets updates; Pull gets updates and merges them.
+268. Q: What is a Git merge conflict? A: When two branches change the same lines of a file and Git cannot resolve it automatically.
+269. Q: What is a Promise in JS? A: An object representing eventual completion/failure of an async operation.
+270. Q: Async/Await? A: Syntactic sugar over promises to write async code synchronously.
+271. Q: What is a Closure in JS? A: A function remembering the scope where it was created.
+272. Q: Let vs Const vs Var? A: Var is function-scoped; Let/Const are block-scoped. Const cannot be reassigned.
+273. Q: Arrow functions vs normal functions? A: Arrow functions don't bind their own 'this'.
+274. Q: What is destructuring in JS? A: Extracting properties from objects/arrays into distinct variables.
+275. Q: What is the Spread operator? A: (...) expands an iterable into elements (used for copying arrays/objects).
+276. Q: What is map() in JS? A: Creates a new array populated with results of a provided function on every element.
+277. Q: What is filter() in JS? A: Creates a new array with elements that pass a test.
+278. Q: What is reduce() in JS? A: Executes a reducer function on each element, resulting in a single output value.
+279. Q: How did you implement Logout? A: Delete the JWT token from localStorage/sessionStorage and redirect to login page.
+280. Q: Is it safe to store JWT in localStorage? A: Vulnerable to XSS. HttpOnly cookies are safer, but localStorage is common in basic apps.
+281. Q: What is XSS? A: Cross-Site Scripting, injecting malicious scripts into web pages.
+282. Q: What is CSRF? A: Cross-Site Request Forgery, forcing user to execute unwanted actions.
+283. Q: How does Spring Security handle passwords? A: Never stores plain text, uses PasswordEncoder (BCrypt).
+284. Q: Explain the Eureka heartbeat. A: Services ping Eureka every 30s. If missed, Eureka unregisters the service.
+285. Q: What port does Eureka run on here? A: 8761.
+286. Q: What port does Gateway run on here? A: 8080.
+287. Q: What is lb:// in Spring Gateway? A: Tells gateway to use the Load Balancer to find the service in Eureka by name.
+288. Q: How to handle high traffic in Society Service? A: Spin up multiple instances of Society Service; Gateway/Eureka will round-robin load balance them.
+289. Q: What is Maven? A: Build automation tool for Java (manages dependencies in pom.xml).
+290. Q: Maven vs Gradle? A: Maven uses XML; Gradle uses Groovy/Kotlin and is generally faster for large builds.
+291. Q: What is the pom.xml? A: Project Object Model, contains config and dependencies.
+292. Q: How to start Spring Boot app from command line? A: mvn spring-boot:run
+293. Q: What is a Docker container? A: A lightweight, standalone, executable package of software that includes everything needed to run.
+294. Q: Image vs Container? A: Image is the blueprint; Container is the running instance.
+295. Q: What is docker-compose? A: Tool for defining and running multi-container Docker applications.
+296. Q: Why use Docker for Microservices? A: Ensures the app runs identically in dev, testing, and production.
+297. Q: What is Kubernetes? A: Orchestration tool for managing containerized applications at scale.
+298. Q: Do you use Kafka/RabbitMQ in this project? A: No, it relies on synchronous HTTP REST calls (or you can say you plan to add it).
+299. Q: Synchronous vs Asynchronous communication? A: Sync waits for response (REST); Async continues without waiting (Message Queues).
+300. Q: When to use Message Queues? A: Sending emails, generating reports, decoupling services.
+301. Q: How do you track bugs in production? A: Using log files (logs/ folder in this project) or tools like Sentry.
+302. Q: What is Agile methodology? A: Iterative approach to software development (Sprints, Scrums).
+303. Q: What was the hardest bug you faced? A: (Prepare an answer: e.g., CORS issues with Gateway, or LazyInitializationException in Hibernate).
+304. Q: How do you handle database migrations? A: Tools like Flyway or Liquibase (if not using hibernate ddl-auto).
+305. Q: What is a BLOB? A: Binary Large Object, used for storing files directly in DB (not recommended for large files).
+306. Q: What is the difference between @RestController and @Controller? A: @RestController automatically applies @ResponseBody to all methods, returning JSON/XML.
+307. Q: What is @ResponseBody? A: Tells Spring to serialize the return object directly to the HTTP response body.
+308. Q: What is @RequestParam? A: Extracts query parameters from the URL (e.g., ?page=1).
+309. Q: What is @PathVariable? A: Extracts values from the URI path (e.g., /user/1).
+310. Q: How do you schedule tasks in Spring Boot? A: @EnableScheduling and @Scheduled annotations.
+311. Q: How do you read properties in React? A: props.propertyName
+312. Q: What is the children prop in React? A: Used to pass components as data to other components.
+313. Q: What is Fragment in React? A: <> </> lets you group elements without adding extra nodes to the DOM.
+314. Q: What is the event loop in Node/JS? A: Handles async callbacks, allowing non-blocking I/O operations.
+315. Q: Call stack vs Task queue? A: Sync code runs in call stack; Async callbacks wait in task queue.
+316. Q: What is an API? A: Application Programming Interface, rules allowing applications to communicate.
+317. Q: What is WebSockets? A: Protocol for full-duplex communication over a single TCP connection (e.g., for live chat).
+318. Q: Could you use WebSockets in this project? A: Yes, for real-time notifications or live chat between tenants and secretary.
+319. Q: What is Server-Sent Events (SSE)? A: Unidirectional real-time events from server to client.
+320. Q: What is OAuth2? A: Authorization framework enabling third-party application access (e.g., Login with Google).
+321. Q: What is Role-Based Access Control (RBAC)? A: Restricting access based on a person's role in the organization.
+322. Q: How did you implement RBAC? A: By validating the role ID attached to the JWT payload on backend requests.
+323. Q: What happens if I tamper with the JWT payload to change my role? A: The JWT signature will become invalid, and the Auth service will reject the token.
+324. Q: How does the Gateway validate the token? A: It either validates the signature locally using the secret key, or forwards it to Auth service.
+325. Q: What is a Salt in hashing? A: Random data added to a password before hashing to defeat precomputed rainbow tables.
+326. Q: Why use UUIDs instead of Integer IDs? A: UUIDs are globally unique, harder to guess, better for distributed systems.
+327. Q: What is a memory leak? A: App allocates memory but fails to release it, causing it to crash eventually.
+328. Q: How does Java handle memory? A: Garbage Collector automatically reclaims memory from unreferenced objects.
+329. Q: Can you force Garbage Collection in Java? A: You can request it (System.gc()), but the JVM decides when to actually run it.
+330. Q: What is a Stack vs Heap in Java? A: Stack stores local variables and method calls; Heap stores objects.
+331. Q: What is a NullPointerException? A: Occurs when calling a method on an object reference that is null.
+332. Q: How to avoid NullPointerException? A: Null checks, Optional class, or proper initialization.
+333. Q: What is the SOLID principle? A: 5 design principles for maintainable OOP (Single Resp, Open/Closed, Liskov, Interface Seg, Dependency Inv).
+334. Q: What is the Single Responsibility Principle? A: A class should have one, and only one, reason to change.
+335. Q: What is the Open/Closed Principle? A: Software entities should be open for extension, closed for modification.
+336. Q: What is a Singleton pattern? A: Ensures a class has only one instance and provides a global point of access.
+337. Q: What is a Factory pattern? A: Creating objects without exposing the instantiation logic.
+338. Q: What is the Builder pattern? A: Constructs complex objects step by step (often used with Lombok @Builder).
+339. Q: What is Lombok? A: Java library that auto-generates getters, setters, constructors to reduce boilerplate.
+340. Q: Disadvantages of Lombok? A: Can make debugging harder, requires IDE plugins.
+341. Q: How do you handle dates in Java? A: Java 8 java.time package (LocalDate, LocalDateTime).
+342. Q: How do you format dates in React? A: Libraries like date-fns, moment.js, or native Intl.DateTimeFormat.
+343. Q: What is a CDN? A: Content Delivery Network, distributes static assets closer to users.
+344. Q: What is Nginx? A: Web server often used as a reverse proxy or load balancer.
+345. Q: Why put React behind Nginx? A: For serving the static files fast and routing API requests to the Java Gateway.
+346. Q: What is a Reverse Proxy? A: Server that sits in front of web servers and forwards client requests to them.
+347. Q: API Gateway vs Reverse Proxy? A: Gateway adds logic like auth, rate limiting, orchestration; Proxy mainly forwards traffic.
+348. Q: What is Rate Limiting? A: Controlling the number of requests a client can make in a given timeframe.
+349. Q: What is caching? A: Storing copies of data in a temporary storage location for fast access.
+350. Q: What is Redis? A: In-memory data structure store, used as database, cache, or message broker.
+351. Q: How would you use Redis here? A: Cache Society Notices so we don't hit MySQL every time a user logs in.
+352. Q: What is an index in an array? A: The position of an element, starting at 0.
+353. Q: What is Big O notation? A: Describes performance/complexity of an algorithm.
+354. Q: Time complexity of finding item in HashMap? A: O(1) on average.
+355. Q: Time complexity of finding item in ArrayList? A: O(N) if unsorted, O(log N) with binary search if sorted.
+356. Q: What is a REST payload? A: The body of the HTTP request or response.
+357. Q: What is base64 encoding? A: Converts binary data into ASCII string format.
+358. Q: Is base64 encryption? A: No, it's easily decodable.
+359. Q: Difference between Authentication and Authorization? A: Authentication = who you are; Authorization = what you can do.
+360. Q: How to deploy a Spring Boot app? A: Package to JAR (mvn clean package), run with 'java -jar app.jar', or containerize with Docker.
+361. Q: How to deploy a React app? A: Run 'npm run build', copy 'dist' folder to Nginx, Apache, Vercel, or AWS S3.
+362. Q: What happens if Gateway fails? A: The entire system becomes inaccessible from the outside (Single Point of Failure).
+363. Q: How to fix Gateway single point of failure? A: Run multiple Gateway instances behind a cloud Load Balancer.
+364. Q: What is a foreign key constraint? A: Prevents actions that would destroy links between tables.
+365. Q: What happens on CASCADE DELETE? A: Deleting a parent row automatically deletes matching child rows.
+366. Q: Should you use CASCADE DELETE? A: Can be dangerous for important data; often better to use soft deletes.
+367. Q: What is a Soft Delete? A: Adding an 'is_deleted' boolean column instead of actually removing the row.
+368. Q: How do you handle pagination in SQL? A: LIMIT and OFFSET.
+369. Q: Why use pagination? A: Performance; loading 10,000 records at once will crash the browser/server.
+370. Q: What is a join table? A: Used to resolve Many-To-Many relationships (e.g., Users and Roles).
+371. Q: What is @Transactional in Spring? A: Wraps a method in a database transaction; rolls back if exception occurs.
+372. Q: Can you catch exceptions inside @Transactional? A: Yes, but if caught without re-throwing, Spring might not roll back.
+373. Q: Checked exception rollback in @Transactional? A: By default, it only rolls back on RuntimeExceptions. Use rollbackFor=Exception.class.
+374. Q: What is a bean lifecycle in Spring? A: Instantiate -> Populate properties -> Init methods -> Ready -> Destroy.
+375. Q: What is @PostConstruct? A: Method to execute right after dependency injection is done.
+376. Q: What is @PreDestroy? A: Method to execute just before bean is destroyed.
+377. Q: What is the @Profile annotation? A: Loads specific beans based on active environment (e.g., dev, prod).
+378. Q: How to switch profiles in Spring Boot? A: application-dev.properties, application-prod.properties, set active in env.
+379. Q: What is CORS preflight request? A: Browser sends an OPTIONS request to check if actual request is allowed.
+380. Q: Why does Vite use port 5173? A: It's just Vite's default dev port.
+381. Q: What is the package.json scripts block? A: Where you define npm commands (like start, build, dev:server1).
+382. Q: What does the 'concurrently' npm package do? A: Runs multiple npm scripts simultaneously (useful if starting backend and frontend together).
+383. Q: What is the DOM? A: Document Object Model, programming interface for HTML.
+384. Q: What is event bubbling? A: Event triggers on innermost element and propagates up the DOM tree.
+385. Q: How to stop event bubbling? A: event.stopPropagation()
+386. Q: What is event.preventDefault()? A: Stops the default action of an element (like form submission refreshing page).
+387. Q: LocalStorage vs SessionStorage? A: LocalStorage persists after browser closes; SessionStorage clears when tab closes.
+388. Q: Cookies vs LocalStorage? A: Cookies are sent with every HTTP request automatically, LocalStorage is not.
+389. Q: What is an interceptor in Axios? A: Function intercepting requests/responses before they are handled by then/catch.
+390. Q: Why use an interceptor? A: To automatically attach JWT tokens to every request header.
+391. Q: How to handle token expiration? A: Interceptor catches 401 error, clears token, and redirects to login.
+392. Q: What is a Refresh Token? A: Long-lived token used to get a new short-lived JWT without logging in again.
+393. Q: Did you implement Refresh Tokens? A: (Answer based on your app, typically in basic apps, you just force re-login).
+394. Q: What are React portals? A: Render children into a DOM node outside the parent hierarchy (e.g., Modals).
+395. Q: What is an Error Boundary in React? A: Component that catches JS errors in child components and displays fallback UI.
+396. Q: How to optimize React performance? A: useMemo, useCallback, React.memo, Lazy loading, Code splitting.
+397. Q: What is code splitting? A: Bundler splits code into smaller chunks, loaded on demand.
+398. Q: What is a synthetic event in React? A: Cross-browser wrapper around browser's native event.
+399. Q: What is the main method in Java? A: Entry point of a Java application (public static void main(String[] args)).
+400. Q: Why is main method static? A: So JVM can invoke it without instantiating the class.
+401. Q: What is the difference between == and .equals() in Java? A: == checks reference equality; .equals() checks value equality.
+402. Q: What is String Pool? A: Special memory region where string literals are stored to save memory.
+403. Q: Why are Strings immutable in Java? A: Security, caching (string pool), synchronization, performance.
+404. Q: StringBuilder vs StringBuffer? A: Both are mutable strings; StringBuffer is synchronized, StringBuilder is not (faster).
+405. Q: What is a ThreadLocal variable? A: Variable providing thread-local isolation (each thread has its own copy).
+406. Q: How do you handle file uploads in React? A: Use <input type="file">, append to FormData object, and post with axios/fetch.
+407. Q: What is Content-Type for file upload? A: multipart/form-data.
+408. Q: What is a Blob in JavaScript? A: Represents raw data, used for file handling.
+409. Q: How to download a file in React? A: Fetch blob from server, create URL with URL.createObjectURL, append invisible <a> tag and click it.
+410. Q: What is an API design first approach? A: Defining API contracts (Swagger) before writing code.
+411. Q: What is API versioning? A: Managing API changes (e.g., /api/v1/users, /api/v2/users).
+412. Q: What is HATEOAS? A: Hypermedia As The Engine Of Application State (API responses include links to related resources).
+413. Q: What is a cron expression? A: String representing a schedule for executing tasks (e.g., backups).
+414. Q: How to run a cron job in Spring Boot? A: @Scheduled(cron = "0 0 * * * *") runs every hour.
+415. Q: What is Java Reflection? A: Inspecting/modifying classes/methods/fields at runtime.
+416. Q: Does Spring use Reflection? A: Yes, extensively for dependency injection and annotations.
+417. Q: What is a Proxy in Spring? A: Wraps a bean to add behavior like Transactions or Security (AOP).
+418. Q: What is AOP? A: Aspect-Oriented Programming, separating cross-cutting concerns (logging, security).
+419. Q: What is an Aspect? A: Modularization of a concern (like logging).
+420. Q: What is a Pointcut? A: Expression defining where an advice should be applied.
+421. Q: What is an Advice? A: Action taken by an aspect at a particular pointcut (Before, After, Around).
+422. Q: How to map a one-to-one relationship? A: @OneToOne and @JoinColumn.
+423. Q: How do you configure a composite primary key? A: @IdClass or @EmbeddedId.
+424. Q: What is @EntityListeners(AuditingEntityListener.class)? A: Auto-populates @CreatedDate and @LastModifiedDate fields.
+425. Q: What is JPQL? A: Java Persistence Query Language, similar to HQL.
+426. Q: What is a Native Query? A: Writing raw SQL queries in JPA (@Query(nativeQuery = true)).
+427. Q: When to use Native Queries? A: For complex reports or database-specific functions not supported by JPQL.
+428. Q: What is a connection pool? A: Cache of DB connections maintained so they can be reused (e.g., HikariCP).
+429. Q: Why use a connection pool? A: Creating a new DB connection is slow and expensive.
+430. Q: What is HikariCP? A: The default, high-performance connection pool in Spring Boot.
+431. Q: What is Webpack? A: A module bundler for JavaScript applications.
+432. Q: What is Babel? A: JS compiler converting ES6+ code into backward-compatible JS.
+433. Q: What is an IIFE? A: Immediately Invoked Function Expression.
+434. Q: What is Hoisting in JS? A: Variables and function declarations are moved to the top of their scope.
+435. Q: Let vs Var hoisting? A: Both are hoisted, but Let is not initialized (Temporal Dead Zone).
+436. Q: What is the Prototype Chain? A: Mechanism by which JS objects inherit features from one another.
+437. Q: Object.create() vs new Object()? A: Object.create allows specifying the prototype object directly.
+438. Q: What are React Server Components? A: Components that fetch data and render on the server, sending zero JS to client (Next.js 13+).
+439. Q: Does Vite support Server Components? A: Not natively like Next.js, Vite is primarily for Single Page Applications (SPAs).
+440. Q: What is an SPA? A: Single Page Application; rewrites current page instead of loading new HTML from server.
+441. Q: SPA vs MPA (Multi-Page App)? A: SPA has smoother UX but harder SEO; MPA reloads page entirely, better for SEO.
+442. Q: How to improve SEO in React? A: Use Next.js (SSR) or React Helmet for meta tags.
+443. Q: What is SSR? A: Server-Side Rendering.
+444. Q: What is CSR? A: Client-Side Rendering (what standard React/Vite does).
+445. Q: What is SSG? A: Static Site Generation (building HTML at compile time).
+446. Q: What is a micro-frontend? A: Extending microservices concept to frontend (multiple React apps acting as one).
+447. Q: Are you using micro-frontends? A: Based on 'my-app', it seems like a monolithic frontend with multiple roles.
+448. Q: How do you mock data in frontend? A: Hardcode JSON objects or use tools like JSON Server.
+449. Q: What is npm script 'start-all.bat' doing? A: It's a Windows batch script to launch all Java and Node processes.
+450. Q: How to secure API keys in React? A: You cannot hide them completely in client-side code; keep sensitive keys on the backend.
+451. Q: What is a .gitignore file? A: Tells Git which files/folders to ignore (e.g., node_modules, target, .env).
+452. Q: Have you used GitHub Actions? A: (Yes/No, mention it for CI/CD pipelines).
+453. Q: What is an Enum in Java? A: A special type representing a fixed set of constants.
+454. Q: What is garbage collection tuning? A: Adjusting JVM flags (like -Xmx) to optimize memory management.
+455. Q: What is a thread pool? A: A group of pre-instantiated, reusable threads.
+456. Q: What is the Executor framework? A: Standard interface for managing thread pools in Java.
+457. Q: What is Callable vs Runnable? A: Callable can return a result and throw exceptions; Runnable cannot.
+458. Q: Future object in Java? A: Represents the result of an asynchronous computation.
+459. Q: CompletableFuture? A: Allows chaining async tasks and callbacks (better than standard Future).
+460. Q: What is CORS origin? A: Scheme + Hostname + Port (e.g., http://localhost:5173).
+461. Q: What are the phases of the React component lifecycle? A: Mounting, Updating, Unmounting.
+462. Q: What is componentDidMount equivalent in Hooks? A: useEffect with an empty dependency array.
+463. Q: What is componentWillUnmount equivalent? A: The return function (cleanup) inside useEffect.
+464. Q: What is the difference between margin and padding? A: Margin is space outside the border; padding is space inside.
+465. Q: What is Flexbox? A: CSS layout model for 1D layouts (rows or columns).
+466. Q: What is CSS Grid? A: CSS layout model for 2D layouts (rows AND columns).
+467. Q: How do you center a div? A: display: flex, justify-content: center, align-items: center.
+468. Q: What is Bootstrap/Tailwind? A: CSS frameworks for rapid UI development.
+469. Q: Did you use a UI library? A: (Mention Material-UI, Bootstrap, or Tailwind if used).
+470. Q: What is responsive web design? A: Web pages that look good on all devices.
+471. Q: What are media queries? A: CSS technique to apply styles based on device characteristics (like width).
+472. Q: How do you handle database backups? A: mysqldump or automated cloud snapshots.
+473. Q: What is horizontal vs vertical scaling? A: Vertical = adding RAM/CPU to 1 server; Horizontal = adding more servers.
+474. Q: Which is better for Microservices? A: Horizontal scaling.
+475. Q: What is a stateless application? A: App that doesn't save client data from one session to the next (e.g., REST with JWT).
+476. Q: What is sticky session? A: Load balancer routing user to the same server they started on (needed if stateful).
+477. Q: Why are stateless microservices preferred? A: Easier to scale horizontally and handle load balancing.
+478. Q: What is multi-tenancy? A: Single instance of software serves multiple customers (tenants).
+479. Q: How could your app be multi-tenant? A: By adding a 'society_id' to all queries, allowing 100s of societies to share the DB securely.
+480. Q: What is GraphQL? A: Query language for APIs, allows client to request exactly what they need.
+481. Q: GraphQL vs REST? A: REST has fixed endpoints/data; GraphQL has 1 endpoint and dynamic data fetching.
+482. Q: What is Webhook? A: HTTP callbacks sent when an event occurs (server to server).
+483. Q: What is Unit Testing? A: Testing individual components in isolation.
+484. Q: What is End-to-End (E2E) testing? A: Testing entire app flow from UI to DB (e.g., using Cypress/Selenium).
+485. Q: What is Test-Driven Development (TDD)? A: Writing tests before writing the actual code.
+486. Q: What are design principles? A: Guidelines to write maintainable code (SOLID, DRY, KISS).
+487. Q: What is DRY? A: Don't Repeat Yourself.
+488. Q: What is KISS? A: Keep It Simple, Stupid.
+489. Q: What is YAGNI? A: You Aren't Gonna Need It (don't over-engineer).
+490. Q: How do you resolve a production bug? A: Identify, Replicate locally, Fix, Test, Deploy.
+491. Q: Have you used Postman environments? A: Yes, for managing variables across dev/prod URLs.
+492. Q: What is @MappedSuperclass? A: JPA annotation to inherit common fields (like id, createdDate) without creating a table for the parent class.
+493. Q: What is soft referencing in Java? A: Object kept in memory until JVM absolutely needs memory, useful for caches.
+494. Q: How do you read a file in Java? A: java.nio.file.Files, BufferedReader, or Scanner.
+495. Q: How do you parse JSON in Java? A: Jackson library (ObjectMapper) or Gson.
+496. Q: How does Spring Boot use Jackson? A: Automatically serializes/deserializes between Objects and JSON.
+497. Q: What is a BeanFactory? A: The simpler, root interface for the Spring IoC container.
+498. Q: ApplicationContext vs BeanFactory? A: AppContext adds AOP, message resource handling, and event publication.
+499. Q: What is a Profile in Spring? A: Grouping configuration beans for specific environments.
+500. Q: How do you feel this project improved your skills? A: It gave me end-to-end experience with Microservices, Spring Boot, React, and deployment architectures.

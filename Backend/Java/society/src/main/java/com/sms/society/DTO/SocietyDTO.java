@@ -19,8 +19,14 @@ public class SocietyDTO {
     @Data
     public static class Response {
         private Long id;
-        private String societyName;    
+        private String societyName;
+        private String registrationNumber;
+        private String address;
+        private String city;
+        private String state;
+        private String pincode;
         private String contactEmail;
+        private String contactPhone;
         private String status;
     }
 }

@@ -11,14 +11,18 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sms.society.DTO.LoginDTO;
 import com.sms.society.Entities.User;
 import com.sms.society.Service.LoginService;
+import com.sms.society.Utils.JwtUtil;
 
 @RestController
-@RequestMapping(value = {"/api/society/login", "/login"})
-@CrossOrigin(origins = "*")
+@RequestMapping("/")
+@CrossOrigin(origins = "http://localhost:5173")
 public class LoginController {
 
     @Autowired
     private LoginService loginService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO.Request loginRequest) {
@@ -46,6 +50,10 @@ public class LoginController {
                 responseDTO.setSocietyName(user.getSociety().getSocietyName());
             }
 
+            // Generate JWT token
+            String token = jwtUtil.generateToken(user);
+            responseDTO.setToken(token);
+
             // Return the safe DTO to the frontend
             return ResponseEntity.ok(responseDTO);
 
@@ -53,7 +61,7 @@ public class LoginController {
 
             return ResponseEntity
                     .status(401)
-                    .body(e.getMessage());
+                    .body(java.util.Map.of("message", e.getMessage()));
         }
     }
 }

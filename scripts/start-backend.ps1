@@ -21,8 +21,8 @@ Start-Process -FilePath "cmd.exe" -ArgumentList '/c', "cd /d `"$root\Backend\Jav
 Write-Host "4. Starting Transaction Service (Port 8083)..." -ForegroundColor Yellow
 Start-Process -FilePath "cmd.exe" -ArgumentList '/c', "cd /d `"$root\Backend\Java\transaction-service`" && set JAVA_HOME=D:\SOFTWARES\JAVA&& mvnw.cmd spring-boot:run > `"$logsDir\transaction.log`" 2>&1" -WindowStyle Hidden
 
-Write-Host "Waiting 5 seconds before starting API Gateway..." -ForegroundColor DarkGray
-Start-Sleep -Seconds 5
+Write-Host "Waiting 15 seconds for microservices to compile and register with Eureka..." -ForegroundColor DarkGray
+Start-Sleep -Seconds 15
 
 Write-Host "5. Starting API Gateway (Port 8080)..." -ForegroundColor Yellow
 Start-Process -FilePath "cmd.exe" -ArgumentList '/c', "cd /d `"$root\Backend\Java\api-gateway`" && set JAVA_HOME=D:\SOFTWARES\JAVA&& mvnw.cmd spring-boot:run > `"$logsDir\gateway.log`" 2>&1" -WindowStyle Hidden

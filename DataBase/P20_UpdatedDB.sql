@@ -1,0 +1,363 @@
+-- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
+--
+-- Host: 127.0.0.1    Database: society_management_system
+-- ------------------------------------------------------
+-- Server version	8.2.0
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `complaints`
+--
+
+DROP TABLE IF EXISTS `complaints`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `complaints` (
+  `Id` bigint NOT NULL AUTO_INCREMENT,
+  `SocietyId` bigint NOT NULL,
+  `FlatId` bigint NOT NULL,
+  `RaisedBy` bigint NOT NULL,
+  `Title` varchar(255) NOT NULL,
+  `Description` text,
+  `Category` varchar(100) DEFAULT NULL,
+  `Priority` varchar(255) DEFAULT NULL,
+  `Status` varchar(255) DEFAULT NULL,
+  `AssignedTo` bigint DEFAULT NULL,
+  `CreatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `ResolvedAt` datetime DEFAULT NULL,
+  PRIMARY KEY (`Id`),
+  KEY `FK_Complaint_Society` (`SocietyId`),
+  KEY `FK_Complaint_Flat` (`FlatId`),
+  KEY `FK_Complaint_RaisedBy` (`RaisedBy`),
+  KEY `FK_Complaint_AssignedTo` (`AssignedTo`),
+  CONSTRAINT `FK_Complaint_AssignedTo` FOREIGN KEY (`AssignedTo`) REFERENCES `users` (`Id`),
+  CONSTRAINT `FK_Complaint_Flat` FOREIGN KEY (`FlatId`) REFERENCES `flats` (`Id`),
+  CONSTRAINT `FK_Complaint_RaisedBy` FOREIGN KEY (`RaisedBy`) REFERENCES `users` (`Id`),
+  CONSTRAINT `FK_Complaint_Society` FOREIGN KEY (`SocietyId`) REFERENCES `societies` (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `complaints`
+--
+
+LOCK TABLES `complaints` WRITE;
+/*!40000 ALTER TABLE `complaints` DISABLE KEYS */;
+INSERT INTO `complaints` VALUES (1,1,1,2,'Water Leakage','Reported by resident','Plumbing','High','Open',1,'2026-07-07 09:50:42',NULL),(2,2,15,13,'Lift Not Working','Reported by resident','Electrical','High','Open',12,'2026-07-07 09:50:42',NULL),(3,3,29,24,'Parking Issue','Reported by resident','Parking','High','Open',23,'2026-07-07 09:50:42',NULL),(4,4,43,35,'Street Light','Reported by resident','Maintenance','High','Open',34,'2026-07-07 09:50:42',NULL),(5,5,57,46,'Garbage Collection','Reported by resident','Security','High','Open',45,'2026-07-07 09:50:42',NULL),(6,6,71,57,'Security Concern','Reported by resident','Plumbing','High','Open',56,'2026-07-07 09:50:42',NULL),(7,7,85,68,'Water Supply','Reported by resident','Electrical','High','Open',67,'2026-07-07 09:50:42',NULL),(8,8,99,79,'Noise Complaint','Reported by resident','Parking','High','Open',78,'2026-07-07 09:50:42',NULL),(9,9,113,90,'Power Backup','Reported by resident','Maintenance','High','Open',89,'2026-07-07 09:50:42',NULL),(10,10,127,101,'Garden Maintenance','Reported by resident','Security','High','Open',100,'2026-07-07 09:50:42',NULL),(11,1,1,2,'Water Leakage in Bathroom','Minor leakage observed near the main valve.','Plumbing','Medium','Open',NULL,'2026-08-03 05:49:41',NULL);
+/*!40000 ALTER TABLE `complaints` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `documents`
+--
+
+DROP TABLE IF EXISTS `documents`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `documents` (
+  `Id` bigint NOT NULL AUTO_INCREMENT,
+  `SocietyId` bigint NOT NULL,
+  `FlatId` bigint DEFAULT NULL,
+  `DocumentName` varchar(255) NOT NULL,
+  `DocumentType` varchar(100) DEFAULT NULL,
+  `AccessScope` varchar(20) DEFAULT 'SOCIETY',
+  `DocumentPath` varchar(500) NOT NULL,
+  `FileSize` bigint DEFAULT '0',
+  `FileType` varchar(50) DEFAULT NULL,
+  `Description` varchar(500) DEFAULT NULL,
+  `UploadedBy` bigint NOT NULL,
+  `UploadedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`Id`),
+  KEY `FK_Document_Society` (`SocietyId`),
+  KEY `FK_Document_Flat` (`FlatId`),
+  KEY `FK_Document_User` (`UploadedBy`),
+  CONSTRAINT `FK_Document_Flat` FOREIGN KEY (`FlatId`) REFERENCES `flats` (`Id`),
+  CONSTRAINT `FK_Document_Society` FOREIGN KEY (`SocietyId`) REFERENCES `societies` (`Id`),
+  CONSTRAINT `FK_Document_User` FOREIGN KEY (`UploadedBy`) REFERENCES `users` (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `documents`
+--
+
+LOCK TABLES `documents` WRITE;
+/*!40000 ALTER TABLE `documents` DISABLE KEYS */;
+INSERT INTO `documents` VALUES (1,1,NULL,'Society Bye Laws','Society Rules','SOCIETY','byelaws_1.pdf',1048576,'application/pdf','Official Society Bye Laws & Guidelines',1,'2026-07-07 04:20:42'),(2,2,NULL,'Society Bye Laws','Society Rules','SOCIETY','byelaws_2.pdf',1048576,'application/pdf','Official Society Bye Laws & Guidelines',12,'2026-07-07 04:20:42'),(3,3,NULL,'Society Bye Laws','Society Rules','SOCIETY','byelaws_3.pdf',1048576,'application/pdf','Official Society Bye Laws & Guidelines',23,'2026-07-07 04:20:42'),(4,4,NULL,'Society Bye Laws','Society Rules','SOCIETY','byelaws_4.pdf',1048576,'application/pdf','Official Society Bye Laws & Guidelines',34,'2026-07-07 04:20:42'),(5,5,NULL,'Society Bye Laws','Society Rules','SOCIETY','byelaws_5.pdf',1048576,'application/pdf','Official Society Bye Laws & Guidelines',45,'2026-07-07 04:20:42'),(6,6,NULL,'Society Bye Laws','Society Rules','SOCIETY','byelaws_6.pdf',1048576,'application/pdf','Official Society Bye Laws & Guidelines',56,'2026-07-07 04:20:42'),(7,7,NULL,'Society Bye Laws','Society Rules','SOCIETY','byelaws_7.pdf',1048576,'application/pdf','Official Society Bye Laws & Guidelines',67,'2026-07-07 04:20:42'),(8,8,NULL,'Society Bye Laws','Society Rules','SOCIETY','byelaws_8.pdf',1048576,'application/pdf','Official Society Bye Laws & Guidelines',78,'2026-07-07 04:20:42'),(9,9,NULL,'Society Bye Laws','Society Rules','SOCIETY','byelaws_9.pdf',1048576,'application/pdf','Official Society Bye Laws & Guidelines',89,'2026-07-07 04:20:42'),(10,10,NULL,'Society Bye Laws','Society Rules','SOCIETY','byelaws_10.pdf',1048576,'application/pdf','Official Society Bye Laws & Guidelines',100,'2026-07-07 04:20:42'),(11,1,NULL,'maintainance','Maintenance Receipt','FLAT','1786128396614_fe26045f.pdf',129558,'application/pdf',NULL,2,'2026-08-07 18:46:38'),(12,2,NULL,'AGM','Society Rules','SOCIETY','1786168157079_609cd9b2.pdf',121366,'application/pdf','details of doc',12,'2026-08-08 05:49:18');
+/*!40000 ALTER TABLE `documents` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `flats`
+--
+
+DROP TABLE IF EXISTS `flats`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `flats` (
+  `Id` bigint NOT NULL AUTO_INCREMENT,
+  `SocietyId` bigint NOT NULL,
+  `FlatNumber` varchar(20) NOT NULL,
+  `FloorNumber` int DEFAULT NULL,
+  `FlatType` varchar(50) DEFAULT NULL,
+  `Status` varchar(255) DEFAULT NULL,
+  `OwnerId` bigint NOT NULL,
+  `TenantId` bigint DEFAULT NULL,
+  PRIMARY KEY (`Id`),
+  KEY `FK_Flat_Society` (`SocietyId`),
+  KEY `FK_Flat_Owner` (`OwnerId`),
+  KEY `FK_Flat_Tenant` (`TenantId`),
+  CONSTRAINT `FK_Flat_Owner` FOREIGN KEY (`OwnerId`) REFERENCES `users` (`Id`),
+  CONSTRAINT `FK_Flat_Society` FOREIGN KEY (`SocietyId`) REFERENCES `societies` (`Id`),
+  CONSTRAINT `FK_Flat_Tenant` FOREIGN KEY (`TenantId`) REFERENCES `users` (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=142 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `flats`
+--
+
+LOCK TABLES `flats` WRITE;
+/*!40000 ALTER TABLE `flats` DISABLE KEYS */;
+INSERT INTO `flats` VALUES (1,1,'A-101',1,'2BHK','Occupied',2,9),(2,1,'A-102',1,'2BHK','Occupied',3,10),(3,1,'A-103',1,'2BHK','Occupied',4,11),(4,1,'A-104',1,'2BHK','Occupied',5,NULL),(5,1,'A-105',2,'2BHK','Occupied',6,NULL),(6,1,'B-106',2,'2BHK','Occupied',7,NULL),(7,1,'B-107',2,'2BHK','Occupied',8,NULL),(8,1,'B-108',2,'2BHK','Occupied',2,NULL),(9,1,'B-109',3,'2BHK','Occupied',3,NULL),(10,1,'B-110',3,'2BHK','Occupied',4,NULL),(11,1,'C-111',3,'2BHK','Occupied',5,NULL),(12,1,'C-112',3,'2BHK','Occupied',6,NULL),(13,1,'C-113',4,'2BHK','Occupied',7,NULL),(14,1,'C-114',4,'2BHK','Occupied',8,NULL),(15,2,'A-101',1,'2BHK','Occupied',13,20),(16,2,'A-102',1,'2BHK','Occupied',14,21),(17,2,'A-103',1,'2BHK','Occupied',15,22),(18,2,'A-104',1,'2BHK','Occupied',16,NULL),(19,2,'A-105',2,'2BHK','Occupied',17,NULL),(20,2,'B-106',2,'2BHK','Occupied',18,NULL),(21,2,'B-107',2,'2BHK','Occupied',19,NULL),(22,2,'B-108',2,'2BHK','Occupied',13,NULL),(23,2,'B-109',3,'2BHK','Occupied',14,NULL),(24,2,'B-110',3,'2BHK','Occupied',15,NULL),(25,2,'C-111',3,'2BHK','Occupied',16,NULL),(26,2,'C-112',3,'2BHK','Occupied',17,NULL),(27,2,'C-113',4,'2BHK','Occupied',18,NULL),(28,2,'C-114',4,'2BHK','Occupied',19,NULL),(29,3,'A-101',1,'2BHK','Occupied',24,31),(30,3,'A-102',1,'2BHK','Occupied',25,32),(31,3,'A-103',1,'2BHK','Occupied',26,33),(32,3,'A-104',1,'2BHK','Occupied',27,NULL),(33,3,'A-105',2,'2BHK','Occupied',28,NULL),(34,3,'B-106',2,'2BHK','Occupied',29,NULL),(35,3,'B-107',2,'2BHK','Occupied',30,NULL),(36,3,'B-108',2,'2BHK','Occupied',24,NULL),(37,3,'B-109',3,'2BHK','Occupied',25,NULL),(38,3,'B-110',3,'2BHK','Occupied',26,NULL),(39,3,'C-111',3,'2BHK','Occupied',27,NULL),(40,3,'C-112',3,'2BHK','Occupied',28,NULL),(41,3,'C-113',4,'2BHK','Occupied',29,NULL),(42,3,'C-114',4,'2BHK','Occupied',30,NULL),(43,4,'A-101',1,'2BHK','Occupied',35,42),(44,4,'A-102',1,'2BHK','Occupied',36,43),(45,4,'A-103',1,'2BHK','Occupied',37,44),(46,4,'A-104',1,'2BHK','Occupied',38,NULL),(47,4,'A-105',2,'2BHK','Occupied',39,NULL),(48,4,'B-106',2,'2BHK','Occupied',40,NULL),(49,4,'B-107',2,'2BHK','Occupied',41,NULL),(50,4,'B-108',2,'2BHK','Occupied',35,NULL),(51,4,'B-109',3,'2BHK','Occupied',36,NULL),(52,4,'B-110',3,'2BHK','Occupied',37,NULL),(53,4,'C-111',3,'2BHK','Occupied',38,NULL),(54,4,'C-112',3,'2BHK','Occupied',39,NULL),(55,4,'C-113',4,'2BHK','Occupied',40,NULL),(56,4,'C-114',4,'2BHK','Occupied',41,NULL),(57,5,'A-101',1,'2BHK','Occupied',46,53),(58,5,'A-102',1,'2BHK','Occupied',47,54),(59,5,'A-103',1,'2BHK','Occupied',48,55),(60,5,'A-104',1,'2BHK','Occupied',49,NULL),(61,5,'A-105',2,'2BHK','Occupied',50,NULL),(62,5,'B-106',2,'2BHK','Occupied',51,NULL),(63,5,'B-107',2,'2BHK','Occupied',52,NULL),(64,5,'B-108',2,'2BHK','Occupied',46,NULL),(65,5,'B-109',3,'2BHK','Occupied',47,NULL),(66,5,'B-110',3,'2BHK','Occupied',48,NULL),(67,5,'C-111',3,'2BHK','Occupied',49,NULL),(68,5,'C-112',3,'2BHK','Occupied',50,NULL),(69,5,'C-113',4,'2BHK','Occupied',51,NULL),(70,5,'C-114',4,'2BHK','Occupied',52,NULL),(71,6,'A-101',1,'2BHK','Occupied',57,64),(72,6,'A-102',1,'2BHK','Occupied',58,65),(73,6,'A-103',1,'2BHK','Occupied',59,66),(74,6,'A-104',1,'2BHK','Occupied',60,NULL),(75,6,'A-105',2,'2BHK','Occupied',61,NULL),(76,6,'B-106',2,'2BHK','Occupied',62,NULL),(77,6,'B-107',2,'2BHK','Occupied',63,NULL),(78,6,'B-108',2,'2BHK','Occupied',57,NULL),(79,6,'B-109',3,'2BHK','Occupied',58,NULL),(80,6,'B-110',3,'2BHK','Occupied',59,NULL),(81,6,'C-111',3,'2BHK','Occupied',60,NULL),(82,6,'C-112',3,'2BHK','Occupied',61,NULL),(83,6,'C-113',4,'2BHK','Occupied',62,NULL),(84,6,'C-114',4,'2BHK','Occupied',63,NULL),(85,7,'A-101',1,'2BHK','Occupied',68,75),(86,7,'A-102',1,'2BHK','Occupied',69,76),(87,7,'A-103',1,'2BHK','Occupied',70,77),(88,7,'A-104',1,'2BHK','Occupied',71,NULL),(89,7,'A-105',2,'2BHK','Occupied',72,NULL),(90,7,'B-106',2,'2BHK','Occupied',73,NULL),(91,7,'B-107',2,'2BHK','Occupied',74,NULL),(92,7,'B-108',2,'2BHK','Occupied',68,NULL),(93,7,'B-109',3,'2BHK','Occupied',69,NULL),(94,7,'B-110',3,'2BHK','Occupied',70,NULL),(95,7,'C-111',3,'2BHK','Occupied',71,NULL),(96,7,'C-112',3,'2BHK','Occupied',72,NULL),(97,7,'C-113',4,'2BHK','Occupied',73,NULL),(98,7,'C-114',4,'2BHK','Occupied',74,NULL),(99,8,'A-101',1,'2BHK','Occupied',79,86),(100,8,'A-102',1,'2BHK','Occupied',80,87),(101,8,'A-103',1,'2BHK','Occupied',81,88),(102,8,'A-104',1,'2BHK','Occupied',82,NULL),(103,8,'A-105',2,'2BHK','Occupied',83,NULL),(104,8,'B-106',2,'2BHK','Occupied',84,NULL),(105,8,'B-107',2,'2BHK','Occupied',85,NULL),(106,8,'B-108',2,'2BHK','Occupied',79,NULL),(107,8,'B-109',3,'2BHK','Occupied',80,NULL),(108,8,'B-110',3,'2BHK','Occupied',81,NULL),(109,8,'C-111',3,'2BHK','Occupied',82,NULL),(110,8,'C-112',3,'2BHK','Occupied',83,NULL),(111,8,'C-113',4,'2BHK','Occupied',84,NULL),(112,8,'C-114',4,'2BHK','Occupied',85,NULL),(113,9,'A-101',1,'2BHK','Occupied',90,97),(114,9,'A-102',1,'2BHK','Occupied',91,98),(115,9,'A-103',1,'2BHK','Occupied',92,99),(116,9,'A-104',1,'2BHK','Occupied',93,NULL),(117,9,'A-105',2,'2BHK','Occupied',94,NULL),(118,9,'B-106',2,'2BHK','Occupied',95,NULL),(119,9,'B-107',2,'2BHK','Occupied',96,NULL),(120,9,'B-108',2,'2BHK','Occupied',90,NULL),(121,9,'B-109',3,'2BHK','Occupied',91,NULL),(122,9,'B-110',3,'2BHK','Occupied',92,NULL),(123,9,'C-111',3,'2BHK','Occupied',93,NULL),(124,9,'C-112',3,'2BHK','Occupied',94,NULL),(125,9,'C-113',4,'2BHK','Occupied',95,NULL),(126,9,'C-114',4,'2BHK','Occupied',96,NULL),(127,10,'A-101',1,'2BHK','Occupied',101,108),(128,10,'A-102',1,'2BHK','Occupied',102,109),(129,10,'A-103',1,'2BHK','Occupied',103,110),(130,10,'A-104',1,'2BHK','Occupied',104,NULL),(131,10,'A-105',2,'2BHK','Occupied',105,NULL),(132,10,'B-106',2,'2BHK','Occupied',106,NULL),(133,10,'B-107',2,'2BHK','Occupied',107,NULL),(134,10,'B-108',2,'2BHK','Occupied',101,NULL),(135,10,'B-109',3,'2BHK','Occupied',102,NULL),(136,10,'B-110',3,'2BHK','Occupied',103,NULL),(137,10,'C-111',3,'2BHK','Occupied',104,NULL),(138,10,'C-112',3,'2BHK','Occupied',105,NULL),(139,10,'C-113',4,'2BHK','Occupied',106,NULL),(140,10,'C-114',4,'2BHK','Occupied',107,NULL),(141,17,'A101',1,'2BHK','Occupied',121,NULL);
+/*!40000 ALTER TABLE `flats` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `maintenance`
+--
+
+DROP TABLE IF EXISTS `maintenance`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `maintenance` (
+  `Id` bigint NOT NULL AUTO_INCREMENT,
+  `SocietyId` bigint NOT NULL,
+  `FlatId` bigint NOT NULL,
+  `Month` int NOT NULL,
+  `Year` int NOT NULL,
+  `Amount` decimal(10,2) NOT NULL,
+  `DueDate` date DEFAULT NULL,
+  `Status` enum('Pending','Paid','Overdue') DEFAULT 'Pending',
+  `GeneratedBy` bigint NOT NULL,
+  `GeneratedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`Id`),
+  KEY `FK_Maintenance_Society` (`SocietyId`),
+  KEY `FK_Maintenance_Flat` (`FlatId`),
+  KEY `FK_Maintenance_User` (`GeneratedBy`),
+  CONSTRAINT `FK_Maintenance_Flat` FOREIGN KEY (`FlatId`) REFERENCES `flats` (`Id`),
+  CONSTRAINT `FK_Maintenance_Society` FOREIGN KEY (`SocietyId`) REFERENCES `societies` (`Id`),
+  CONSTRAINT `FK_Maintenance_User` FOREIGN KEY (`GeneratedBy`) REFERENCES `users` (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=141 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `maintenance`
+--
+
+LOCK TABLES `maintenance` WRITE;
+/*!40000 ALTER TABLE `maintenance` DISABLE KEYS */;
+INSERT INTO `maintenance` VALUES (1,1,1,7,2026,2500.00,'2026-07-20','Pending',1,'2026-07-07 09:50:42'),(2,1,2,7,2026,2550.00,'2026-07-20','Pending',1,'2026-07-07 09:50:42'),(3,1,3,7,2026,2600.00,'2026-07-20','Pending',1,'2026-07-07 09:50:42'),(4,1,4,7,2026,2650.00,'2026-07-20','Pending',1,'2026-07-07 09:50:42'),(5,1,5,7,2026,2700.00,'2026-07-20','Pending',1,'2026-07-07 09:50:42'),(6,1,6,7,2026,2750.00,'2026-07-20','Pending',1,'2026-07-07 09:50:42'),(7,1,7,7,2026,2800.00,'2026-07-20','Pending',1,'2026-07-07 09:50:42'),(8,1,8,7,2026,2850.00,'2026-07-20','Pending',1,'2026-07-07 09:50:42'),(9,1,9,7,2026,2900.00,'2026-07-20','Pending',1,'2026-07-07 09:50:42'),(10,1,10,7,2026,2950.00,'2026-07-20','Pending',1,'2026-07-07 09:50:42'),(11,1,11,7,2026,3000.00,'2026-07-20','Pending',1,'2026-07-07 09:50:42'),(12,1,12,7,2026,3050.00,'2026-07-20','Pending',1,'2026-07-07 09:50:42'),(13,1,13,7,2026,3100.00,'2026-07-20','Pending',1,'2026-07-07 09:50:42'),(14,1,14,7,2026,3150.00,'2026-07-20','Pending',1,'2026-07-07 09:50:42'),(15,2,15,7,2026,2500.00,'2026-07-20','Pending',12,'2026-07-07 09:50:42'),(16,2,16,7,2026,2550.00,'2026-07-20','Pending',12,'2026-07-07 09:50:42'),(17,2,17,7,2026,2600.00,'2026-07-20','Pending',12,'2026-07-07 09:50:42'),(18,2,18,7,2026,2650.00,'2026-07-20','Pending',12,'2026-07-07 09:50:42'),(19,2,19,7,2026,2700.00,'2026-07-20','Pending',12,'2026-07-07 09:50:42'),(20,2,20,7,2026,2750.00,'2026-07-20','Pending',12,'2026-07-07 09:50:42'),(21,2,21,7,2026,2800.00,'2026-07-20','Pending',12,'2026-07-07 09:50:42'),(22,2,22,7,2026,2850.00,'2026-07-20','Pending',12,'2026-07-07 09:50:42'),(23,2,23,7,2026,2900.00,'2026-07-20','Pending',12,'2026-07-07 09:50:42'),(24,2,24,7,2026,2950.00,'2026-07-20','Pending',12,'2026-07-07 09:50:42'),(25,2,25,7,2026,3000.00,'2026-07-20','Pending',12,'2026-07-07 09:50:42'),(26,2,26,7,2026,3050.00,'2026-07-20','Pending',12,'2026-07-07 09:50:42'),(27,2,27,7,2026,3100.00,'2026-07-20','Pending',12,'2026-07-07 09:50:42'),(28,2,28,7,2026,3150.00,'2026-07-20','Pending',12,'2026-07-07 09:50:42'),(29,3,29,7,2026,2500.00,'2026-07-20','Pending',23,'2026-07-07 09:50:42'),(30,3,30,7,2026,2550.00,'2026-07-20','Pending',23,'2026-07-07 09:50:42'),(31,3,31,7,2026,2600.00,'2026-07-20','Pending',23,'2026-07-07 09:50:42'),(32,3,32,7,2026,2650.00,'2026-07-20','Pending',23,'2026-07-07 09:50:42'),(33,3,33,7,2026,2700.00,'2026-07-20','Pending',23,'2026-07-07 09:50:42'),(34,3,34,7,2026,2750.00,'2026-07-20','Pending',23,'2026-07-07 09:50:42'),(35,3,35,7,2026,2800.00,'2026-07-20','Pending',23,'2026-07-07 09:50:42'),(36,3,36,7,2026,2850.00,'2026-07-20','Pending',23,'2026-07-07 09:50:42'),(37,3,37,7,2026,2900.00,'2026-07-20','Pending',23,'2026-07-07 09:50:42'),(38,3,38,7,2026,2950.00,'2026-07-20','Pending',23,'2026-07-07 09:50:42'),(39,3,39,7,2026,3000.00,'2026-07-20','Pending',23,'2026-07-07 09:50:42'),(40,3,40,7,2026,3050.00,'2026-07-20','Pending',23,'2026-07-07 09:50:42'),(41,3,41,7,2026,3100.00,'2026-07-20','Pending',23,'2026-07-07 09:50:42'),(42,3,42,7,2026,3150.00,'2026-07-20','Pending',23,'2026-07-07 09:50:42'),(43,4,43,7,2026,2500.00,'2026-07-20','Pending',34,'2026-07-07 09:50:42'),(44,4,44,7,2026,2550.00,'2026-07-20','Pending',34,'2026-07-07 09:50:42'),(45,4,45,7,2026,2600.00,'2026-07-20','Pending',34,'2026-07-07 09:50:42'),(46,4,46,7,2026,2650.00,'2026-07-20','Pending',34,'2026-07-07 09:50:42'),(47,4,47,7,2026,2700.00,'2026-07-20','Pending',34,'2026-07-07 09:50:42'),(48,4,48,7,2026,2750.00,'2026-07-20','Pending',34,'2026-07-07 09:50:42'),(49,4,49,7,2026,2800.00,'2026-07-20','Pending',34,'2026-07-07 09:50:42'),(50,4,50,7,2026,2850.00,'2026-07-20','Pending',34,'2026-07-07 09:50:42'),(51,4,51,7,2026,2900.00,'2026-07-20','Pending',34,'2026-07-07 09:50:42'),(52,4,52,7,2026,2950.00,'2026-07-20','Pending',34,'2026-07-07 09:50:42'),(53,4,53,7,2026,3000.00,'2026-07-20','Pending',34,'2026-07-07 09:50:42'),(54,4,54,7,2026,3050.00,'2026-07-20','Pending',34,'2026-07-07 09:50:42'),(55,4,55,7,2026,3100.00,'2026-07-20','Pending',34,'2026-07-07 09:50:42'),(56,4,56,7,2026,3150.00,'2026-07-20','Pending',34,'2026-07-07 09:50:42'),(57,5,57,7,2026,2500.00,'2026-07-20','Pending',45,'2026-07-07 09:50:42'),(58,5,58,7,2026,2550.00,'2026-07-20','Pending',45,'2026-07-07 09:50:42'),(59,5,59,7,2026,2600.00,'2026-07-20','Pending',45,'2026-07-07 09:50:42'),(60,5,60,7,2026,2650.00,'2026-07-20','Pending',45,'2026-07-07 09:50:42'),(61,5,61,7,2026,2700.00,'2026-07-20','Pending',45,'2026-07-07 09:50:42'),(62,5,62,7,2026,2750.00,'2026-07-20','Pending',45,'2026-07-07 09:50:42'),(63,5,63,7,2026,2800.00,'2026-07-20','Pending',45,'2026-07-07 09:50:42'),(64,5,64,7,2026,2850.00,'2026-07-20','Pending',45,'2026-07-07 09:50:42'),(65,5,65,7,2026,2900.00,'2026-07-20','Pending',45,'2026-07-07 09:50:42'),(66,5,66,7,2026,2950.00,'2026-07-20','Pending',45,'2026-07-07 09:50:42'),(67,5,67,7,2026,3000.00,'2026-07-20','Pending',45,'2026-07-07 09:50:42'),(68,5,68,7,2026,3050.00,'2026-07-20','Pending',45,'2026-07-07 09:50:42'),(69,5,69,7,2026,3100.00,'2026-07-20','Pending',45,'2026-07-07 09:50:42'),(70,5,70,7,2026,3150.00,'2026-07-20','Pending',45,'2026-07-07 09:50:42'),(71,6,71,7,2026,2500.00,'2026-07-20','Pending',56,'2026-07-07 09:50:42'),(72,6,72,7,2026,2550.00,'2026-07-20','Pending',56,'2026-07-07 09:50:42'),(73,6,73,7,2026,2600.00,'2026-07-20','Pending',56,'2026-07-07 09:50:42'),(74,6,74,7,2026,2650.00,'2026-07-20','Pending',56,'2026-07-07 09:50:42'),(75,6,75,7,2026,2700.00,'2026-07-20','Pending',56,'2026-07-07 09:50:42'),(76,6,76,7,2026,2750.00,'2026-07-20','Pending',56,'2026-07-07 09:50:42'),(77,6,77,7,2026,2800.00,'2026-07-20','Pending',56,'2026-07-07 09:50:42'),(78,6,78,7,2026,2850.00,'2026-07-20','Pending',56,'2026-07-07 09:50:42'),(79,6,79,7,2026,2900.00,'2026-07-20','Pending',56,'2026-07-07 09:50:42'),(80,6,80,7,2026,2950.00,'2026-07-20','Pending',56,'2026-07-07 09:50:42'),(81,6,81,7,2026,3000.00,'2026-07-20','Pending',56,'2026-07-07 09:50:42'),(82,6,82,7,2026,3050.00,'2026-07-20','Pending',56,'2026-07-07 09:50:42'),(83,6,83,7,2026,3100.00,'2026-07-20','Pending',56,'2026-07-07 09:50:42'),(84,6,84,7,2026,3150.00,'2026-07-20','Pending',56,'2026-07-07 09:50:42'),(85,7,85,7,2026,2500.00,'2026-07-20','Pending',67,'2026-07-07 09:50:42'),(86,7,86,7,2026,2550.00,'2026-07-20','Pending',67,'2026-07-07 09:50:42'),(87,7,87,7,2026,2600.00,'2026-07-20','Pending',67,'2026-07-07 09:50:42'),(88,7,88,7,2026,2650.00,'2026-07-20','Pending',67,'2026-07-07 09:50:42'),(89,7,89,7,2026,2700.00,'2026-07-20','Pending',67,'2026-07-07 09:50:42'),(90,7,90,7,2026,2750.00,'2026-07-20','Pending',67,'2026-07-07 09:50:42'),(91,7,91,7,2026,2800.00,'2026-07-20','Pending',67,'2026-07-07 09:50:42'),(92,7,92,7,2026,2850.00,'2026-07-20','Pending',67,'2026-07-07 09:50:42'),(93,7,93,7,2026,2900.00,'2026-07-20','Pending',67,'2026-07-07 09:50:42'),(94,7,94,7,2026,2950.00,'2026-07-20','Pending',67,'2026-07-07 09:50:42'),(95,7,95,7,2026,3000.00,'2026-07-20','Pending',67,'2026-07-07 09:50:42'),(96,7,96,7,2026,3050.00,'2026-07-20','Pending',67,'2026-07-07 09:50:42'),(97,7,97,7,2026,3100.00,'2026-07-20','Pending',67,'2026-07-07 09:50:42'),(98,7,98,7,2026,3150.00,'2026-07-20','Pending',67,'2026-07-07 09:50:42'),(99,8,99,7,2026,2500.00,'2026-07-20','Pending',78,'2026-07-07 09:50:42'),(100,8,100,7,2026,2550.00,'2026-07-20','Pending',78,'2026-07-07 09:50:42'),(101,8,101,7,2026,2600.00,'2026-07-20','Pending',78,'2026-07-07 09:50:42'),(102,8,102,7,2026,2650.00,'2026-07-20','Pending',78,'2026-07-07 09:50:42'),(103,8,103,7,2026,2700.00,'2026-07-20','Pending',78,'2026-07-07 09:50:42'),(104,8,104,7,2026,2750.00,'2026-07-20','Pending',78,'2026-07-07 09:50:42'),(105,8,105,7,2026,2800.00,'2026-07-20','Pending',78,'2026-07-07 09:50:42'),(106,8,106,7,2026,2850.00,'2026-07-20','Pending',78,'2026-07-07 09:50:42'),(107,8,107,7,2026,2900.00,'2026-07-20','Pending',78,'2026-07-07 09:50:42'),(108,8,108,7,2026,2950.00,'2026-07-20','Pending',78,'2026-07-07 09:50:42'),(109,8,109,7,2026,3000.00,'2026-07-20','Pending',78,'2026-07-07 09:50:42'),(110,8,110,7,2026,3050.00,'2026-07-20','Pending',78,'2026-07-07 09:50:42'),(111,8,111,7,2026,3100.00,'2026-07-20','Pending',78,'2026-07-07 09:50:42'),(112,8,112,7,2026,3150.00,'2026-07-20','Pending',78,'2026-07-07 09:50:42'),(113,9,113,7,2026,2500.00,'2026-07-20','Pending',89,'2026-07-07 09:50:42'),(114,9,114,7,2026,2550.00,'2026-07-20','Pending',89,'2026-07-07 09:50:42'),(115,9,115,7,2026,2600.00,'2026-07-20','Pending',89,'2026-07-07 09:50:42'),(116,9,116,7,2026,2650.00,'2026-07-20','Pending',89,'2026-07-07 09:50:42'),(117,9,117,7,2026,2700.00,'2026-07-20','Pending',89,'2026-07-07 09:50:42'),(118,9,118,7,2026,2750.00,'2026-07-20','Pending',89,'2026-07-07 09:50:42'),(119,9,119,7,2026,2800.00,'2026-07-20','Pending',89,'2026-07-07 09:50:42'),(120,9,120,7,2026,2850.00,'2026-07-20','Pending',89,'2026-07-07 09:50:42'),(121,9,121,7,2026,2900.00,'2026-07-20','Pending',89,'2026-07-07 09:50:42'),(122,9,122,7,2026,2950.00,'2026-07-20','Pending',89,'2026-07-07 09:50:42'),(123,9,123,7,2026,3000.00,'2026-07-20','Pending',89,'2026-07-07 09:50:42'),(124,9,124,7,2026,3050.00,'2026-07-20','Pending',89,'2026-07-07 09:50:42'),(125,9,125,7,2026,3100.00,'2026-07-20','Pending',89,'2026-07-07 09:50:42'),(126,9,126,7,2026,3150.00,'2026-07-20','Pending',89,'2026-07-07 09:50:42'),(127,10,127,7,2026,2500.00,'2026-07-20','Pending',100,'2026-07-07 09:50:42'),(128,10,128,7,2026,2550.00,'2026-07-20','Pending',100,'2026-07-07 09:50:42'),(129,10,129,7,2026,2600.00,'2026-07-20','Pending',100,'2026-07-07 09:50:42'),(130,10,130,7,2026,2650.00,'2026-07-20','Pending',100,'2026-07-07 09:50:42'),(131,10,131,7,2026,2700.00,'2026-07-20','Pending',100,'2026-07-07 09:50:42'),(132,10,132,7,2026,2750.00,'2026-07-20','Pending',100,'2026-07-07 09:50:42'),(133,10,133,7,2026,2800.00,'2026-07-20','Pending',100,'2026-07-07 09:50:42'),(134,10,134,7,2026,2850.00,'2026-07-20','Pending',100,'2026-07-07 09:50:42'),(135,10,135,7,2026,2900.00,'2026-07-20','Pending',100,'2026-07-07 09:50:42'),(136,10,136,7,2026,2950.00,'2026-07-20','Pending',100,'2026-07-07 09:50:42'),(137,10,137,7,2026,3000.00,'2026-07-20','Pending',100,'2026-07-07 09:50:42'),(138,10,138,7,2026,3050.00,'2026-07-20','Pending',100,'2026-07-07 09:50:42'),(139,10,139,7,2026,3100.00,'2026-07-20','Pending',100,'2026-07-07 09:50:42'),(140,10,140,7,2026,3150.00,'2026-07-20','Pending',100,'2026-07-07 09:50:42');
+/*!40000 ALTER TABLE `maintenance` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `notices`
+--
+
+DROP TABLE IF EXISTS `notices`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `notices` (
+  `Id` bigint NOT NULL AUTO_INCREMENT,
+  `SocietyId` bigint NOT NULL,
+  `Title` varchar(255) NOT NULL,
+  `Description` text,
+  `PublishedBy` bigint NOT NULL,
+  `PublishDate` datetime DEFAULT CURRENT_TIMESTAMP,
+  `ExpiryDate` datetime DEFAULT NULL,
+  `CreatedAt` datetime(6) DEFAULT NULL,
+  `PublishedDate` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`Id`),
+  KEY `FK_Notice_Society` (`SocietyId`),
+  KEY `FK_Notice_User` (`PublishedBy`),
+  CONSTRAINT `FK_Notice_Society` FOREIGN KEY (`SocietyId`) REFERENCES `societies` (`Id`),
+  CONSTRAINT `FK_Notice_User` FOREIGN KEY (`PublishedBy`) REFERENCES `users` (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `notices`
+--
+
+LOCK TABLES `notices` WRITE;
+/*!40000 ALTER TABLE `notices` DISABLE KEYS */;
+INSERT INTO `notices` VALUES (1,1,'Monthly Notice','Maintenance schedule and updates',1,'2026-07-07 15:20:42','2026-08-06 15:20:42',NULL,NULL),(2,2,'Monthly Notice','Maintenance schedule and updates',12,'2026-07-07 15:20:42','2026-08-06 15:20:42',NULL,NULL),(3,3,'Monthly Notice','Maintenance schedule and updates',23,'2026-07-07 15:20:42','2026-08-06 15:20:42',NULL,NULL),(4,4,'Monthly Notice','Maintenance schedule and updates',34,'2026-07-07 15:20:42','2026-08-06 15:20:42',NULL,NULL),(5,5,'Monthly Notice','Maintenance schedule and updates',45,'2026-07-07 15:20:42','2026-08-06 15:20:42',NULL,NULL),(6,6,'Monthly Notice','Maintenance schedule and updates',56,'2026-07-07 15:20:42','2026-08-06 15:20:42',NULL,NULL),(7,7,'Monthly Notice','Maintenance schedule and updates',67,'2026-07-07 15:20:42','2026-08-06 15:20:42',NULL,NULL),(8,8,'Monthly Notice','Maintenance schedule and updates',78,'2026-07-07 15:20:42','2026-08-06 15:20:42',NULL,NULL),(9,9,'Monthly Notice','Maintenance schedule and updates',89,'2026-07-07 15:20:42','2026-08-06 15:20:42',NULL,NULL),(10,10,'Monthly Notice','Maintenance schedule and updates',100,'2026-07-07 15:20:42','2026-08-06 15:20:42',NULL,NULL),(11,2,'AGM 2026','Date:5 Aug 2026\n\nannual budget\nexpenses ',12,'2026-07-31 15:12:36','2026-08-07 15:12:00',NULL,'2026-07-31 15:12:00.000000'),(12,2,'Annual General Meeting','AGM scheduled for Sunday at 10 AM in clubhouse.',12,'2026-08-03 11:19:27','2026-08-10 11:19:28',NULL,'2026-08-03 11:19:27.506000'),(13,1,'Water Tank Cleaning Notice','Scheduled cleaning of water tanks on Wednesday from 10 AM to 2 PM.',1,'2026-08-03 11:59:22','2026-08-06 11:59:22',NULL,'2026-08-03 11:59:21.669000');
+/*!40000 ALTER TABLE `notices` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `payments`
+--
+
+DROP TABLE IF EXISTS `payments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `payments` (
+  `Id` bigint NOT NULL AUTO_INCREMENT,
+  `MaintenanceId` bigint NOT NULL,
+  `PaidBy` bigint NOT NULL,
+  `Amount` double NOT NULL,
+  `PaymentMode` varchar(50) DEFAULT NULL,
+  `TransactionId` varchar(100) DEFAULT NULL,
+  `PaymentDate` datetime DEFAULT CURRENT_TIMESTAMP,
+  `Status` varchar(50) DEFAULT NULL,
+  `CreatedAt` datetime(6) DEFAULT NULL,
+  `Purpose` varchar(255) DEFAULT NULL,
+  `ReceiptPath` varchar(500) DEFAULT NULL,
+  `FlatId` bigint DEFAULT NULL,
+  `SocietyId` bigint DEFAULT NULL,
+  PRIMARY KEY (`Id`),
+  KEY `FK_Payment_Maintenance` (`MaintenanceId`),
+  KEY `FK_Payment_User` (`PaidBy`),
+  KEY `FK3cqt7fpy755ij4merp66rovch` (`FlatId`),
+  KEY `FKnv5ul88d83x7x3afdoctid67r` (`SocietyId`),
+  CONSTRAINT `FK3cqt7fpy755ij4merp66rovch` FOREIGN KEY (`FlatId`) REFERENCES `flats` (`Id`),
+  CONSTRAINT `FK_Payment_Maintenance` FOREIGN KEY (`MaintenanceId`) REFERENCES `maintenance` (`Id`),
+  CONSTRAINT `FK_Payment_User` FOREIGN KEY (`PaidBy`) REFERENCES `users` (`Id`),
+  CONSTRAINT `FKnv5ul88d83x7x3afdoctid67r` FOREIGN KEY (`SocietyId`) REFERENCES `societies` (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=141 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `payments`
+--
+
+LOCK TABLES `payments` WRITE;
+/*!40000 ALTER TABLE `payments` DISABLE KEYS */;
+INSERT INTO `payments` VALUES (1,1,2,2500,'UPI','TXN000001','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(2,2,3,2550,'UPI','TXN000002','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(3,3,4,2600,'UPI','TXN000003','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(4,4,5,2650,'UPI','TXN000004','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(5,5,6,2700,'UPI','TXN000005','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(6,6,7,2750,'UPI','TXN000006','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(7,7,8,2800,'UPI','TXN000007','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(8,8,2,2850,'UPI','TXN000008','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(9,9,3,2900,'UPI','TXN000009','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(10,10,4,2950,'UPI','TXN000010','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(11,11,5,3000,'UPI','TXN000011','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(12,12,6,3050,'UPI','TXN000012','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(13,13,7,3100,'UPI','TXN000013','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(14,14,8,3150,'UPI','TXN000014','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(15,15,13,2500,'UPI','TXN000015','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(16,16,14,2550,'UPI','TXN000016','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(17,17,15,2600,'UPI','TXN000017','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(18,18,16,2650,'UPI','TXN000018','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(19,19,17,2700,'UPI','TXN000019','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(20,20,18,2750,'UPI','TXN000020','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(21,21,19,2800,'UPI','TXN000021','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(22,22,13,2850,'UPI','TXN000022','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(23,23,14,2900,'UPI','TXN000023','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(24,24,15,2950,'UPI','TXN000024','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(25,25,16,3000,'UPI','TXN000025','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(26,26,17,3050,'UPI','TXN000026','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(27,27,18,3100,'UPI','TXN000027','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(28,28,19,3150,'UPI','TXN000028','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(29,29,24,2500,'UPI','TXN000029','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(30,30,25,2550,'UPI','TXN000030','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(31,31,26,2600,'UPI','TXN000031','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(32,32,27,2650,'UPI','TXN000032','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(33,33,28,2700,'UPI','TXN000033','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(34,34,29,2750,'UPI','TXN000034','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(35,35,30,2800,'UPI','TXN000035','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(36,36,24,2850,'UPI','TXN000036','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(37,37,25,2900,'UPI','TXN000037','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(38,38,26,2950,'UPI','TXN000038','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(39,39,27,3000,'UPI','TXN000039','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(40,40,28,3050,'UPI','TXN000040','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(41,41,29,3100,'UPI','TXN000041','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(42,42,30,3150,'UPI','TXN000042','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(43,43,35,2500,'UPI','TXN000043','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(44,44,36,2550,'UPI','TXN000044','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(45,45,37,2600,'UPI','TXN000045','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(46,46,38,2650,'UPI','TXN000046','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(47,47,39,2700,'UPI','TXN000047','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(48,48,40,2750,'UPI','TXN000048','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(49,49,41,2800,'UPI','TXN000049','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(50,50,35,2850,'UPI','TXN000050','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(51,51,36,2900,'UPI','TXN000051','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(52,52,37,2950,'UPI','TXN000052','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(53,53,38,3000,'UPI','TXN000053','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(54,54,39,3050,'UPI','TXN000054','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(55,55,40,3100,'UPI','TXN000055','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(56,56,41,3150,'UPI','TXN000056','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(57,57,46,2500,'UPI','TXN000057','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(58,58,47,2550,'UPI','TXN000058','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(59,59,48,2600,'UPI','TXN000059','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(60,60,49,2650,'UPI','TXN000060','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(61,61,50,2700,'UPI','TXN000061','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(62,62,51,2750,'UPI','TXN000062','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(63,63,52,2800,'UPI','TXN000063','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(64,64,46,2850,'UPI','TXN000064','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(65,65,47,2900,'UPI','TXN000065','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(66,66,48,2950,'UPI','TXN000066','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(67,67,49,3000,'UPI','TXN000067','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(68,68,50,3050,'UPI','TXN000068','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(69,69,51,3100,'UPI','TXN000069','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(70,70,52,3150,'UPI','TXN000070','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(71,71,57,2500,'UPI','TXN000071','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(72,72,58,2550,'UPI','TXN000072','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(73,73,59,2600,'UPI','TXN000073','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(74,74,60,2650,'UPI','TXN000074','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(75,75,61,2700,'UPI','TXN000075','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(76,76,62,2750,'UPI','TXN000076','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(77,77,63,2800,'UPI','TXN000077','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(78,78,57,2850,'UPI','TXN000078','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(79,79,58,2900,'UPI','TXN000079','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(80,80,59,2950,'UPI','TXN000080','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(81,81,60,3000,'UPI','TXN000081','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(82,82,61,3050,'UPI','TXN000082','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(83,83,62,3100,'UPI','TXN000083','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(84,84,63,3150,'UPI','TXN000084','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(85,85,68,2500,'UPI','TXN000085','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(86,86,69,2550,'UPI','TXN000086','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(87,87,70,2600,'UPI','TXN000087','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(88,88,71,2650,'UPI','TXN000088','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(89,89,72,2700,'UPI','TXN000089','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(90,90,73,2750,'UPI','TXN000090','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(91,91,74,2800,'UPI','TXN000091','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(92,92,68,2850,'UPI','TXN000092','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(93,93,69,2900,'UPI','TXN000093','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(94,94,70,2950,'UPI','TXN000094','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(95,95,71,3000,'UPI','TXN000095','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(96,96,72,3050,'UPI','TXN000096','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(97,97,73,3100,'UPI','TXN000097','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(98,98,74,3150,'UPI','TXN000098','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(99,99,79,2500,'UPI','TXN000099','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(100,100,80,2550,'UPI','TXN000100','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(101,101,81,2600,'UPI','TXN000101','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(102,102,82,2650,'UPI','TXN000102','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(103,103,83,2700,'UPI','TXN000103','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(104,104,84,2750,'UPI','TXN000104','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(105,105,85,2800,'UPI','TXN000105','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(106,106,79,2850,'UPI','TXN000106','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(107,107,80,2900,'UPI','TXN000107','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(108,108,81,2950,'UPI','TXN000108','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(109,109,82,3000,'UPI','TXN000109','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(110,110,83,3050,'UPI','TXN000110','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(111,111,84,3100,'UPI','TXN000111','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(112,112,85,3150,'UPI','TXN000112','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(113,113,90,2500,'UPI','TXN000113','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(114,114,91,2550,'UPI','TXN000114','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(115,115,92,2600,'UPI','TXN000115','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(116,116,93,2650,'UPI','TXN000116','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(117,117,94,2700,'UPI','TXN000117','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(118,118,95,2750,'UPI','TXN000118','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(119,119,96,2800,'UPI','TXN000119','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(120,120,90,2850,'UPI','TXN000120','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(121,121,91,2900,'UPI','TXN000121','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(122,122,92,2950,'UPI','TXN000122','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(123,123,93,3000,'UPI','TXN000123','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(124,124,94,3050,'UPI','TXN000124','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(125,125,95,3100,'UPI','TXN000125','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(126,126,96,3150,'UPI','TXN000126','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(127,127,101,2500,'UPI','TXN000127','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(128,128,102,2550,'UPI','TXN000128','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(129,129,103,2600,'UPI','TXN000129','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(130,130,104,2650,'UPI','TXN000130','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(131,131,105,2700,'UPI','TXN000131','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(132,132,106,2750,'UPI','TXN000132','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(133,133,107,2800,'UPI','TXN000133','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(134,134,101,2850,'UPI','TXN000134','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(135,135,102,2900,'UPI','TXN000135','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(136,136,103,2950,'UPI','TXN000136','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(137,137,104,3000,'UPI','TXN000137','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(138,138,105,3050,'UPI','TXN000138','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(139,139,106,3100,'UPI','TXN000139','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL),(140,140,107,3150,'UPI','TXN000140','2026-07-07 15:20:42','Success',NULL,NULL,NULL,NULL,NULL);
+/*!40000 ALTER TABLE `payments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `societies`
+--
+
+DROP TABLE IF EXISTS `societies`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `societies` (
+  `Id` bigint NOT NULL AUTO_INCREMENT,
+  `SocietyName` varchar(200) NOT NULL,
+  `Address` varchar(500) DEFAULT NULL,
+  `City` varchar(100) DEFAULT NULL,
+  `State` varchar(100) DEFAULT NULL,
+  `Pincode` varchar(20) DEFAULT NULL,
+  `ContactEmail` varchar(255) DEFAULT NULL,
+  `ContactPhone` varchar(20) DEFAULT NULL,
+  `Password` varchar(255) NOT NULL,
+  `Status` varchar(20) DEFAULT NULL,
+  `RegistrationNumber` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`Id`),
+  UNIQUE KEY `UKjfxhvorj3phiw3htli9lxfgh2` (`RegistrationNumber`)
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `societies`
+--
+
+LOCK TABLES `societies` WRITE;
+/*!40000 ALTER TABLE `societies` DISABLE KEYS */;
+INSERT INTO `societies` VALUES (1,'Green Valley Residency','Address 1','Pune','Maharashtra','410001','info1@greenvalleyresidency.com','9800000001','Green@123','Approved',NULL),(2,'Sunshine Heights','Address 2','Pune','Maharashtra','410002','info2@sunshineheights.com','9800000002','Sunshine@123','Approved',NULL),(3,'Silver Oak Apartments','Address 3','Mumbai','Maharashtra','410003','info3@silveroakapartments.com','9800000003','Silver@123','Pending',NULL),(4,'Royal Heritage Society','Address 4','Nashik','Maharashtra','410004','info4@royalheritagesociety.com','9800000004','Royal@123','Pending',NULL),(5,'Blue Ridge Township','Address 5','Pune','Maharashtra','410005','info5@blueridgetownship.com','9800000005','Blue@123','Approved',NULL),(6,'Emerald Greens','Address 6','Nagpur','Maharashtra','410006','info6@emeraldgreens.com','9800000006','Emerald@123','Pending',NULL),(7,'Sai Paradise','Address 7','Pimpri-Chinchwad','Maharashtra','410007','info7@saiparadise.com','9800000007','Sai@123','Pending',NULL),(8,'Lotus Residency','Address 8','Thane','Maharashtra','410008','info8@lotusresidency.com','9800000008','Lotus@123','Pending',NULL),(9,'Palm Meadows','Address 9','Aurangabad','Maharashtra','410009','info9@palmmeadows.com','9800000009','Palm@123','Pending',NULL),(10,'Orchid Enclave','Address 10','Kolhapur','Maharashtra','410010','info10@orchidenclave.com','9800000010','Orchid@123','Pending',NULL),(11,'Sharda Sadan Society','Dhayari','Pune','Maharashtra','411041','admin@shardasadan.com','9876543210','securepassword123','PENDING',NULL),(13,'Sharda Sadan Society','Dhayari','Pune','Maharashtra','411041','admin@shardasadan1.com','9876543210','securepassword123','PENDING',NULL),(14,'Sharda Sadan Society','Dhayari','Pune','Maharashtra','411041','admin@shardasadan2.com','9876543210','securepassword123','PENDING',NULL),(15,'Royal Palm Heights 5391','Lane 4, Park Road','Pune','Maharashtra','411001','test_society_5399@sms.com','9876596902','Password@123','PENDING',NULL),(16,'Royal Palm Heights 6563','Lane 4, Park Road','Pune','Maharashtra','411001','test_society_6563@sms.com','9876552517','Password@123','PENDING',NULL),(17,'CDAC','pune','pune','maharashtra','411041','adityabhokare03@gmail.com','9876543210','$2a$10$2XwVLig2zYikeYX3tsqxne4jOhW19NXv6cDJDoXI4WLNlEdBMCxFK','APPROVED',NULL);
+/*!40000 ALTER TABLE `societies` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `users` (
+  `Id` bigint NOT NULL AUTO_INCREMENT,
+  `SocietyId` bigint DEFAULT NULL,
+  `RoleId` bigint NOT NULL,
+  `FirstName` varchar(100) NOT NULL,
+  `LastName` varchar(100) DEFAULT NULL,
+  `Email` varchar(255) NOT NULL,
+  `PhoneNumber` varchar(20) DEFAULT NULL,
+  `Password` varchar(255) NOT NULL,
+  `IsActive` tinyint(1) DEFAULT '1',
+  `CreatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`Id`),
+  UNIQUE KEY `Email` (`Email`),
+  KEY `FK_User_Society` (`SocietyId`),
+  KEY `FK_User_Role` (`RoleId`),
+  CONSTRAINT `FK_User_Role` FOREIGN KEY (`RoleId`) REFERENCES `roles` (`Id`),
+  CONSTRAINT `FK_User_Society` FOREIGN KEY (`SocietyId`) REFERENCES `societies` (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=122 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `users`
+--
+
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (1,1,1,'Admin1','Manager','admin1@sms.com','9000000001','$2a$10$dG2thpuii7I.C5.TGO8/Z.L2PDd/jAXvbDh/T4LuRHE0n9eIkR4ym',1,'2026-07-07 09:50:42'),(2,1,3,'Amit','Patil','amit.2@mail.com','9100000002','$2a$10$I9/gb6K627O2subod8I5fegaFljcqBfTzj2HcyJW4UFPGaGRL9ooO',1,'2026-07-07 09:50:42'),(3,1,3,'Anjali','More','anjali.3@mail.com','9100000003','owner123',1,'2026-07-07 09:50:42'),(4,1,3,'Nikhil','Patil','nikhil.4@mail.com','9100000004','owner123',1,'2026-07-07 09:50:42'),(5,1,3,'Komal','More','komal.5@mail.com','9100000005','owner123',1,'2026-07-07 09:50:42'),(6,1,3,'Harsh','Patil','harsh.6@mail.com','9100000006','owner123',1,'2026-07-07 09:50:42'),(7,1,3,'Priya','More','priya.7@mail.com','9100000007','owner123',1,'2026-07-07 09:50:42'),(8,1,3,'Rohit','Patil','rohit.8@mail.com','9100000008','owner123',1,'2026-07-07 09:50:42'),(9,1,4,'Harsh','Joshi','harsh.9@mail.com','9200000009','tenant123',1,'2026-07-07 09:50:42'),(10,1,4,'Rahul','Patil','rahul.10@mail.com','9200000010','tenant123',1,'2026-07-07 09:50:42'),(11,1,4,'Akash','Pawar','akash.11@mail.com','9200000011','tenant123',1,'2026-07-07 09:50:42'),(12,2,2,'Admin2','Manager','admin2@sms.com','9000000012','$2a$10$eP1GrtVticDC20gaGs4ss.k9gkk0vIoTBqHilARqhW01nZbXhD1Xe',1,'2026-07-07 09:50:42'),(13,2,3,'Meera','More','meera.13@mail.com','9100000013','owner123',1,'2026-07-07 09:50:42'),(14,2,3,'Akash','Patil','akash.14@mail.com','9100000014','owner123',1,'2026-07-07 09:50:42'),(15,2,3,'Pooja','More','pooja.15@mail.com','9100000015','owner123',1,'2026-07-07 09:50:42'),(16,2,3,'Karan','Patil','karan.16@mail.com','9100000016','owner123',1,'2026-07-07 09:50:42'),(17,2,3,'Sakshi','More','sakshi.17@mail.com','9100000017','owner123',1,'2026-07-07 09:50:42'),(18,2,3,'Sagar','Patil','sagar.18@mail.com','9100000018','owner123',1,'2026-07-07 09:50:42'),(19,2,3,'Riya','More','riya.19@mail.com','9100000019','owner123',1,'2026-07-07 09:50:42'),(20,2,4,'Rahul','Patil','rahul.20@mail.com','9200000020','tenant123',1,'2026-07-07 09:50:42'),(21,2,4,'Akash','Pawar','akash.21@mail.com','9200000021','tenant123',1,'2026-07-07 09:50:42'),(22,2,4,'Rohit','Kulkarni','rohit.22@mail.com','9200000022','tenant123',1,'2026-07-07 09:50:42'),(23,3,2,'Admin3','Manager','admin3@sms.com','9000000023','admin123',1,'2026-07-07 09:50:42'),(24,3,3,'Nikhil','Patil','nikhil.24@mail.com','9100000024','owner123',1,'2026-07-07 09:50:42'),(25,3,3,'Komal','More','komal.25@mail.com','9100000025','owner123',1,'2026-07-07 09:50:42'),(26,3,3,'Harsh','Patil','harsh.26@mail.com','9100000026','owner123',1,'2026-07-07 09:50:42'),(27,3,3,'Priya','More','priya.27@mail.com','9100000027','owner123',1,'2026-07-07 09:50:42'),(28,3,3,'Rohit','Patil','rohit.28@mail.com','9100000028','owner123',1,'2026-07-07 09:50:42'),(29,3,3,'Neha','More','neha.29@mail.com','9100000029','owner123',1,'2026-07-07 09:50:42'),(30,3,3,'Vivek','Patil','vivek.30@mail.com','9100000030','owner123',1,'2026-07-07 09:50:42'),(31,3,4,'Akash','Pawar','akash.31@mail.com','9200000031','tenant123',1,'2026-07-07 09:50:42'),(32,3,4,'Rohit','Kulkarni','rohit.32@mail.com','9200000032','tenant123',1,'2026-07-07 09:50:42'),(33,3,4,'Amit','Deshmukh','amit.33@mail.com','9200000033','tenant123',1,'2026-07-07 09:50:42'),(34,4,2,'Admin4','Manager','admin4@sms.com','9000000034','admin123',1,'2026-07-07 09:50:42'),(35,4,3,'Pooja','More','pooja.35@mail.com','9100000035','owner123',1,'2026-07-07 09:50:42'),(36,4,3,'Karan','Patil','karan.36@mail.com','9100000036','owner123',1,'2026-07-07 09:50:42'),(37,4,3,'Sakshi','More','sakshi.37@mail.com','9100000037','owner123',1,'2026-07-07 09:50:42'),(38,4,3,'Sagar','Patil','sagar.38@mail.com','9100000038','owner123',1,'2026-07-07 09:50:42'),(39,4,3,'Riya','More','riya.39@mail.com','9100000039','owner123',1,'2026-07-07 09:50:42'),(40,4,3,'Rahul','Patil','rahul.40@mail.com','9100000040','owner123',1,'2026-07-07 09:50:42'),(41,4,3,'Sneha','More','sneha.41@mail.com','9100000041','owner123',1,'2026-07-07 09:50:42'),(42,4,4,'Rohit','Kulkarni','rohit.42@mail.com','9200000042','tenant123',1,'2026-07-07 09:50:42'),(43,4,4,'Amit','Deshmukh','amit.43@mail.com','9200000043','tenant123',1,'2026-07-07 09:50:42'),(44,4,4,'Karan','Chavan','karan.44@mail.com','9200000044','tenant123',1,'2026-07-07 09:50:42'),(45,5,2,'Admin5','Manager','admin5@sms.com','9000000045','admin123',1,'2026-07-07 09:50:42'),(46,5,3,'Harsh','Patil','harsh.46@mail.com','9100000046','owner123',1,'2026-07-07 09:50:42'),(47,5,3,'Priya','More','priya.47@mail.com','9100000047','owner123',1,'2026-07-07 09:50:42'),(48,5,3,'Rohit','Patil','rohit.48@mail.com','9100000048','owner123',1,'2026-07-07 09:50:42'),(49,5,3,'Neha','More','neha.49@mail.com','9100000049','owner123',1,'2026-07-07 09:50:42'),(50,5,3,'Vivek','Patil','vivek.50@mail.com','9100000050','owner123',1,'2026-07-07 09:50:42'),(51,5,3,'Aarti','More','aarti.51@mail.com','9100000051','owner123',1,'2026-07-07 09:50:42'),(52,5,3,'Aditya','Patil','aditya.52@mail.com','9100000052','owner123',1,'2026-07-07 09:50:42'),(53,5,4,'Amit','Deshmukh','amit.53@mail.com','9200000053','tenant123',1,'2026-07-07 09:50:42'),(54,5,4,'Karan','Chavan','karan.54@mail.com','9200000054','tenant123',1,'2026-07-07 09:50:42'),(55,5,4,'Vivek','More','vivek.55@mail.com','9200000055','tenant123',1,'2026-07-07 09:50:42'),(56,6,2,'Admin6','Manager','admin6@sms.com','9000000056','admin123',1,'2026-07-07 09:50:42'),(57,6,3,'Sakshi','More','sakshi.57@mail.com','9100000057','owner123',1,'2026-07-07 09:50:42'),(58,6,3,'Sagar','Patil','sagar.58@mail.com','9100000058','owner123',1,'2026-07-07 09:50:42'),(59,6,3,'Riya','More','riya.59@mail.com','9100000059','owner123',1,'2026-07-07 09:50:42'),(60,6,3,'Rahul','Patil','rahul.60@mail.com','9100000060','owner123',1,'2026-07-07 09:50:42'),(61,6,3,'Sneha','More','sneha.61@mail.com','9100000061','owner123',1,'2026-07-07 09:50:42'),(62,6,3,'Amit','Patil','amit.62@mail.com','9100000062','owner123',1,'2026-07-07 09:50:42'),(63,6,3,'Anjali','More','anjali.63@mail.com','9100000063','owner123',1,'2026-07-07 09:50:42'),(64,6,4,'Karan','Chavan','karan.64@mail.com','9200000064','tenant123',1,'2026-07-07 09:50:42'),(65,6,4,'Vivek','More','vivek.65@mail.com','9200000065','tenant123',1,'2026-07-07 09:50:42'),(66,6,4,'Nikhil','Shinde','nikhil.66@mail.com','9200000066','tenant123',1,'2026-07-07 09:50:42'),(67,7,2,'Admin7','Manager','admin7@sms.com','9000000067','admin123',1,'2026-07-07 09:50:42'),(68,7,3,'Rohit','Patil','rohit.68@mail.com','9100000068','owner123',1,'2026-07-07 09:50:42'),(69,7,3,'Neha','More','neha.69@mail.com','9100000069','owner123',1,'2026-07-07 09:50:42'),(70,7,3,'Vivek','Patil','vivek.70@mail.com','9100000070','owner123',1,'2026-07-07 09:50:42'),(71,7,3,'Aarti','More','aarti.71@mail.com','9100000071','owner123',1,'2026-07-07 09:50:42'),(72,7,3,'Aditya','Patil','aditya.72@mail.com','9100000072','owner123',1,'2026-07-07 09:50:42'),(73,7,3,'Meera','More','meera.73@mail.com','9100000073','owner123',1,'2026-07-07 09:50:42'),(74,7,3,'Akash','Patil','akash.74@mail.com','9100000074','owner123',1,'2026-07-07 09:50:42'),(75,7,4,'Vivek','More','vivek.75@mail.com','9200000075','tenant123',1,'2026-07-07 09:50:42'),(76,7,4,'Nikhil','Shinde','nikhil.76@mail.com','9200000076','tenant123',1,'2026-07-07 09:50:42'),(77,7,4,'Sagar','Kale','sagar.77@mail.com','9200000077','tenant123',1,'2026-07-07 09:50:42'),(78,8,2,'Admin8','Manager','admin8@sms.com','9000000078','admin123',1,'2026-07-07 09:50:42'),(79,8,3,'Riya','More','riya.79@mail.com','9100000079','owner123',1,'2026-07-07 09:50:42'),(80,8,3,'Rahul','Patil','rahul.80@mail.com','9100000080','owner123',1,'2026-07-07 09:50:42'),(81,8,3,'Sneha','More','sneha.81@mail.com','9100000081','owner123',1,'2026-07-07 09:50:42'),(82,8,3,'Amit','Patil','amit.82@mail.com','9100000082','owner123',1,'2026-07-07 09:50:42'),(83,8,3,'Anjali','More','anjali.83@mail.com','9100000083','owner123',1,'2026-07-07 09:50:42'),(84,8,3,'Nikhil','Patil','nikhil.84@mail.com','9100000084','owner123',1,'2026-07-07 09:50:42'),(85,8,3,'Komal','More','komal.85@mail.com','9100000085','owner123',1,'2026-07-07 09:50:42'),(86,8,4,'Nikhil','Shinde','nikhil.86@mail.com','9200000086','tenant123',1,'2026-07-07 09:50:42'),(87,8,4,'Sagar','Kale','sagar.87@mail.com','9200000087','tenant123',1,'2026-07-07 09:50:42'),(88,8,4,'Aditya','Jadhav','aditya.88@mail.com','9200000088','tenant123',1,'2026-07-07 09:50:42'),(89,9,2,'Admin9','Manager','admin9@sms.com','9000000089','admin123',1,'2026-07-07 09:50:42'),(90,9,3,'Vivek','Patil','vivek.90@mail.com','9100000090','owner123',1,'2026-07-07 09:50:42'),(91,9,3,'Aarti','More','aarti.91@mail.com','9100000091','owner123',1,'2026-07-07 09:50:42'),(92,9,3,'Aditya','Patil','aditya.92@mail.com','9100000092','owner123',1,'2026-07-07 09:50:42'),(93,9,3,'Meera','More','meera.93@mail.com','9100000093','owner123',1,'2026-07-07 09:50:42'),(94,9,3,'Akash','Patil','akash.94@mail.com','9100000094','owner123',1,'2026-07-07 09:50:42'),(95,9,3,'Pooja','More','pooja.95@mail.com','9100000095','owner123',1,'2026-07-07 09:50:42'),(96,9,3,'Karan','Patil','karan.96@mail.com','9100000096','owner123',1,'2026-07-07 09:50:42'),(97,9,4,'Sagar','Kale','sagar.97@mail.com','9200000097','tenant123',1,'2026-07-07 09:50:42'),(98,9,4,'Aditya','Jadhav','aditya.98@mail.com','9200000098','tenant123',1,'2026-07-07 09:50:42'),(99,9,4,'Harsh','Joshi','harsh.99@mail.com','9200000099','tenant123',1,'2026-07-07 09:50:42'),(100,10,2,'Admin10','Manager','admin10@sms.com','9000000100','admin123',1,'2026-07-07 09:50:42'),(101,10,3,'Sneha','More','sneha.101@mail.com','9100000101','owner123',1,'2026-07-07 09:50:42'),(102,10,3,'Amit','Patil','amit.102@mail.com','9100000102','owner123',1,'2026-07-07 09:50:42'),(103,10,3,'Anjali','More','anjali.103@mail.com','9100000103','owner123',1,'2026-07-07 09:50:42'),(104,10,3,'Nikhil','Patil','nikhil.104@mail.com','9100000104','owner123',1,'2026-07-07 09:50:42'),(105,10,3,'Komal','More','komal.105@mail.com','9100000105','owner123',1,'2026-07-07 09:50:42'),(106,10,3,'Harsh','Patil','harsh.106@mail.com','9100000106','owner123',1,'2026-07-07 09:50:42'),(107,10,3,'Priya','More','priya.107@mail.com','9100000107','owner123',1,'2026-07-07 09:50:42'),(108,10,4,'Aditya','Jadhav','aditya.108@mail.com','9200000108','tenant123',1,'2026-07-07 09:50:42'),(109,10,4,'Harsh','Joshi','harsh.109@mail.com','9200000109','tenant123',1,'2026-07-07 09:50:42'),(110,10,4,'Rahul','Patil','rahul.110@mail.com','9200000110','tenant123',1,'2026-07-07 09:50:42'),(111,2,3,'AKSHAY','TARU','akshaytaru02@gmail.com','07666566939','owner@123',1,NULL),(112,1,3,'shamsunder','tripatilal','shamsunder@gmail.com','3456789306','Tenant@123',1,NULL),(113,1,4,'ramlal','desai','ramukaka@tenant','9876543210','ramlal@123',1,NULL),(114,1,4,'aniket','salunkhe','aniket@tenant','9875430148','$2a$10$3/bHvj3692HDqDigI1UHxe3jyQjeQFdl7DKttP0.jLkUiuC1ZM/Ce',1,'2026-07-30 18:50:24'),(115,15,2,'Admin','Royal Palm Heights 5391','test_society_5399@sms.com','9876596902','Password@123',1,NULL),(116,16,2,'Admin','Royal Palm Heights 6563','test_society_6563@sms.com','9876552517','Password@123',1,NULL),(117,1,3,'Raj','Sharma','raj.sharma_6687@sms.com','9820027934','rajPassword123',1,NULL),(118,1,3,'ramlala','joshi','ramu@gmail.com','9876543211','Ramu@21',1,NULL),(119,2,3,'Mukesh','Borole','muks@gmail.com','0987654321','muks@123',1,'2026-08-03 07:48:25'),(120,17,2,'Admin','CDAC','adityabhokare03@gmail.com','9876543210','$2a$10$2XwVLig2zYikeYX3tsqxne4jOhW19NXv6cDJDoXI4WLNlEdBMCxFK',1,NULL),(121,17,3,'aniket','s','aniket@gmail','09876543210','$2a$10$nI4PTBsT4sE0QRZ5GE8yC.uPrAnwfOXEDGQ1LPIPq0ueUGCdiBCca',1,'2026-08-08 05:44:48');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `votes`
+--
+
+DROP TABLE IF EXISTS `votes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `votes` (
+  `Id` bigint NOT NULL AUTO_INCREMENT,
+  `PollId` bigint NOT NULL,
+  `UserId` bigint NOT NULL,
+  `SelectedOption` varchar(255) DEFAULT NULL,
+  `VotedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`Id`),
+  UNIQUE KEY `UK_Poll_User` (`PollId`,`UserId`),
+  KEY `FK_Vote_User` (`UserId`),
+  CONSTRAINT `FK_Vote_Poll` FOREIGN KEY (`PollId`) REFERENCES `polls` (`Id`),
+  CONSTRAINT `FK_Vote_User` FOREIGN KEY (`UserId`) REFERENCES `users` (`Id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `votes`
+--
+
+LOCK TABLES `votes` WRITE;
+/*!40000 ALTER TABLE `votes` DISABLE KEYS */;
+INSERT INTO `votes` VALUES (1,1,2,'Ganesh','2026-07-07 09:50:42'),(2,2,13,'Ganesh','2026-07-07 09:50:42'),(3,3,24,'Ganesh','2026-07-07 09:50:42'),(4,4,35,'Ganesh','2026-07-07 09:50:42'),(5,5,46,'Ganesh','2026-07-07 09:50:42'),(6,6,57,'Ganesh','2026-07-07 09:50:42'),(7,7,68,'Ganesh','2026-07-07 09:50:42'),(8,8,79,'Ganesh','2026-07-07 09:50:42'),(9,9,90,'Ganesh','2026-07-07 09:50:42'),(10,10,101,'Ganesh','2026-07-07 09:50:42');
+/*!40000 ALTER TABLE `votes` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-08-08 13:11:22
