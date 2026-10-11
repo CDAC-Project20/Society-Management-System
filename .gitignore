@@ -7,6 +7,11 @@ dist-ssr/
 logs/
 Express_Server/
 
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+
 # Java & Maven
 target/
 *.class

@@ -64,4 +64,44 @@ public class ComplaintController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
+
+    @Autowired
+    private com.sms.society.Service.ComplaintSummaryService complaintSummaryService;
+
+    @GetMapping("/analysis")
+    public ResponseEntity<?> getComplaintAnalysis(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) Long societyId,
+            @org.springframework.web.bind.annotation.RequestParam(required = false, defaultValue = "ALL") String status,
+            HttpServletRequest request) {
+        try {
+            com.sms.society.DTO.ComplaintAnalysisResponse response =
+                    complaintSummaryService.analyzeComplaints(societyId, status, request);
+            return ResponseEntity.ok(response);
+        } catch (SecurityException se) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", se.getMessage()));
+        } catch (IllegalStateException ise) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of("error", ise.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/society/{societyId}/analysis")
+    public ResponseEntity<?> getComplaintAnalysisBySociety(
+            @PathVariable Long societyId,
+            @org.springframework.web.bind.annotation.RequestParam(required = false, defaultValue = "ALL") String status,
+            HttpServletRequest request) {
+        try {
+            com.sms.society.DTO.ComplaintAnalysisResponse response =
+                    complaintSummaryService.analyzeComplaints(societyId, status, request);
+            return ResponseEntity.ok(response);
+        } catch (SecurityException se) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", se.getMessage()));
+        } catch (IllegalStateException ise) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of("error", ise.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
+    }
 }
+

@@ -33,7 +33,7 @@ public class Complaint {
     private Society society;
 
     @ManyToOne
-    @JoinColumn(name = "FlatId", referencedColumnName = "Id", nullable = false)
+    @JoinColumn(name = "FlatId", referencedColumnName = "Id")
     private Flat flat;
 
     @ManyToOne
